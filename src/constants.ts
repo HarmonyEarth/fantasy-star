@@ -1,0 +1,23 @@
+export enum LOCOMOTION {
+  WALKING = 'WALKING',
+  RUNNING = 'RUNNING',
+  JUMPING = 'JUMPING',
+  DODGING = 'DODGING',
+}
+
+export enum ANIMATION_STATES {
+  LOCOMOTION = 'LOCOMOTION',
+  IDLE = 'IDLE',
+  TAUNT = 'TAUNT',
+  ATTACK = 'ATTACK',
+  ABILITY = 'ABILITY',
+  DEATH = 'DEATH',
+  DAMAGED = 'DAMAGED',
+  POSE = 'POSE',
+}
+
+export enum AUDIO {
+  VOICE_FX = 'VOICE_FX',
+  SOUND_FX = 'SOUND_FX',
+  MUSIC = 'MUSIC',
+}
