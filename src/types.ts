@@ -1,6 +1,11 @@
 import { AnimationClip } from 'three/src/Three.js';
 import { ANIMATION_STATES, AUDIO } from './constants';
 
+export interface CharacterType {
+  id: string;
+  position: number[];
+}
+
 export type Sound = {
   displayName: string; // Display name for the audio (e.g., "Main Theme")
   fileName: string; // Path to the audio file (e.g., "assets/music/main_theme.mp3")
