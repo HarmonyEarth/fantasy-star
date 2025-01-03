@@ -30,7 +30,7 @@ export enum AUDIO {
   MUSIC = 'MUSIC',
 }
 
-export enum SOCKET_IO_EVENTS {
+export enum SOCKET_EVENTS {
   CONNECTION = 'connection',
   CONNECT = 'connect',
   DISCONNECT = 'disconnect',

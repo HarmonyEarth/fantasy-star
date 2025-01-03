@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useAtom } from 'jotai';
-import type { CharacterType } from '../types';
-import { charactersAtom, SOCKET_IO_EVENTS } from '../constants';
+import type { CharacterType } from '../../types';
+import { charactersAtom, SOCKET_EVENTS } from '../../constants';
 
 export const SocketManager = () => {
   const [, setCharacters] = useAtom(charactersAtom);
@@ -31,10 +31,10 @@ export const SocketManager = () => {
         const { event: eventType, data } = JSON.parse(event.data);
 
         switch (eventType) {
-          case SOCKET_IO_EVENTS.HELLO:
+          case SOCKET_EVENTS.HELLO:
             onHello();
             break;
-          case SOCKET_IO_EVENTS.CHARACTERS:
+          case SOCKET_EVENTS.CHARACTERS:
             onCharacters(data);
             break;
           default:

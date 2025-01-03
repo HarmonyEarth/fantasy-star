@@ -1,6 +1,6 @@
 import { Canvas } from '@react-three/fiber';
-import Experience from '../components/Experience';
-import { SocketManager } from '../components/SocketManager';
+import Experience from '../components/Game/Experience';
+import { SocketManager } from '../components/Game/SocketManager';
 
 const HomePage = () => {
   return (

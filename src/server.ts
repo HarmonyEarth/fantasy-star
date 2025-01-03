@@ -1,4 +1,4 @@
-import { SOCKET_IO_EVENTS } from './constants';
+import { SOCKET_EVENTS } from './constants';
 import type { CharacterType } from './types';
 
 interface WebSocketData {
@@ -39,7 +39,7 @@ const server = Bun.serve<WebSocketData>({
 
       ws.send(
         JSON.stringify({
-          event: SOCKET_IO_EVENTS.HELLO,
+          event: SOCKET_EVENTS.HELLO,
           data: null,
         })
       );
@@ -47,7 +47,7 @@ const server = Bun.serve<WebSocketData>({
       server.publish(
         'game-updates',
         JSON.stringify({
-          event: SOCKET_IO_EVENTS.CHARACTERS,
+          event: SOCKET_EVENTS.CHARACTERS,
           data: characters,
         })
       );
@@ -57,7 +57,7 @@ const server = Bun.serve<WebSocketData>({
         const parsed = JSON.parse(String(message));
         const { event, data } = parsed;
 
-        if (event === SOCKET_IO_EVENTS.MOVE) {
+        if (event === SOCKET_EVENTS.MOVE) {
           const character = characters.find((c) => c.id === ws.data.id);
 
           if (character) {
@@ -65,7 +65,7 @@ const server = Bun.serve<WebSocketData>({
             server.publish(
               'game-updates',
               JSON.stringify({
-                event: SOCKET_IO_EVENTS.CHARACTERS,
+                event: SOCKET_EVENTS.CHARACTERS,
                 data: characters,
               })
             );
@@ -85,7 +85,7 @@ const server = Bun.serve<WebSocketData>({
         server.publish(
           'game-updates',
           JSON.stringify({
-            event: SOCKET_IO_EVENTS.CHARACTERS,
+            event: SOCKET_EVENTS.CHARACTERS,
             data: characters,
           })
         );
