@@ -1,14 +1,8 @@
-import { atom } from 'jotai';
-import type { CharacterType } from './types';
-
-export const charactersAtom = atom<CharacterType[]>([]);
-
 export enum LOCOMOTION {
-  WALKING = 'WALKING',
   RUNNING = 'RUNNING',
   JUMPING = 'JUMPING',
   DODGING = 'DODGING',
-  LANDING = 'LANDING', // New state for landing after a jump
+  FALLING = 'FALLING',
 }
 
 export enum ANIMATION_STATES {
@@ -24,7 +18,18 @@ export enum ANIMATION_STATES {
   INTERRUPTED = 'INTERRUPTED', // General state for being interrupted
 }
 
-export enum AUDIO {
+export enum ATTACK_LEVELS {
+  STANDING_LIGHT = 'STANDING_LIGHT',
+  STANDING_MEDIUM = 'STANDING_MEDIUM',
+  STANDING_HEAVY = 'STANDING_HEAVY',
+  AERIAL_LIGHT = 'AERIAL_LIGHT',
+  AERIAL_MEDIUM = 'AERIAL_MEDIUM',
+  AERIAL_HEAVY = 'AERIAL_HEAVY',
+  STANDING_SPECIAL = 'STANDING_SPECIAL',
+  AERIAL_SPECIAL = 'AERIAL_SPECIAL',
+}
+
+export enum SOUND_CATEGORIES {
   VOICE_FX = 'VOICE_FX',
   SOUND_FX = 'SOUND_FX',
   MUSIC = 'MUSIC',
@@ -37,4 +42,16 @@ export enum SOCKET_EVENTS {
   HELLO = 'hello',
   CHARACTERS = 'characters',
   MOVE = 'move',
+}
+
+export enum INPUT_DEVICES {
+  KEYBOARD = 'KEYBOARD',
+  GAMEPAD = 'GAMEPAD',
+  TOUCH = 'TOUCH',
+}
+
+export enum CAMERA_MODES {
+  GAME = 'GAME',
+  CUTSCENE = 'CUTSCENE',
+  MENU = 'MENU',
 }

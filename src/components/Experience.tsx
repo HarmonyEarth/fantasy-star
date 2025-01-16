@@ -1,6 +1,5 @@
 import {
   Environment,
-  OrbitControls,
   Stats,
   Grid,
   useTexture,
@@ -10,6 +9,12 @@ import { Physics, RigidBody } from '@react-three/rapier';
 import { AxesHelper, RepeatWrapping } from 'three';
 import { Perf } from 'r3f-perf';
 import CharacterController from './CharacterController';
+import CameraController from './CameraController';
+import Character from './Character';
+import { characters } from '../assets/mockData';
+import { ANIMATION_STATES } from '../constants';
+import { Suspense } from 'react';
+import ErrorBoundary from './ErrorBoundary';
 
 const keyboardMap = [
   { name: 'forward', keys: ['ArrowUp', 'KeyW'] },
@@ -27,12 +32,12 @@ const Experience = () => {
   return (
     <>
       <KeyboardControls map={keyboardMap}>
-        {/* <Perf minimal /> */}
+        <Perf minimal />
         <Stats />
+
         <ambientLight intensity={0.5} />
         <directionalLight position={[10, 10, 10]} intensity={1} castShadow />
         <Environment preset="sunset" background backgroundBlurriness={0.3} />
-
         <Physics debug>
           <group>
             <RigidBody type="fixed">
@@ -58,7 +63,15 @@ const Experience = () => {
               followCamera={false}
             />
           </group>
-          <CharacterController />
+          {/* <CharacterController /> */}
+          <Suspense fallback={null}>
+            <Character
+              characters={characters}
+              characterId={characters[0].id}
+              animationState={ANIMATION_STATES.IDLE}
+            />
+          </Suspense>
+          <CameraController />
         </Physics>
       </KeyboardControls>
     </>

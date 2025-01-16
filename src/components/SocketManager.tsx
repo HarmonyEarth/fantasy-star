@@ -1,7 +1,8 @@
 import { useEffect } from 'react';
 import { useAtom } from 'jotai';
-import type { CharacterType } from '../../types';
-import { charactersAtom, SOCKET_EVENTS } from '../../constants';
+import type { CharacterType } from '../types';
+import { SOCKET_EVENTS } from '../constants';
+import { charactersAtom } from '../store';
 
 export const SocketManager = () => {
   const [, setCharacters] = useAtom(charactersAtom);
