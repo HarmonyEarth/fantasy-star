@@ -6,6 +6,7 @@ import {
   characterPositionAtom,
   characterRotationAtom,
   cameraModeAtom,
+  selectedInputDeviceAtom,
 } from '../store';
 import { useGamepad } from '../hooks/useGamepad';
 import { CAMERA_MODES } from '../constants';

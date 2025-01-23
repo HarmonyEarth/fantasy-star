@@ -4,20 +4,22 @@ import Experience from '../components/Experience';
 import { SocketManager } from '../components/SocketManager';
 import type { CharacterType } from '../types';
 import { characters } from '../assets/mockData';
+import InputDeviceSelector from '../components/InputSelector';
 
 const HomePage = () => {
   return (
-    <>
+    <div className="w-full h-screen">
+      <InputDeviceSelector />
       <SocketManager />
       <Canvas
-        style={{ height: '100vh', width: '100vw' }}
         fallback={<div>Sorry no WebGL supported!</div>}
         shadows
+
         // gl={(canvas) => new WebGPURenderer({ canvas, antialias: true })}
       >
         <Experience />
       </Canvas>
-    </>
+    </div>
   );
 };
 

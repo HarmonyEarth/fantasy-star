@@ -1,10 +1,9 @@
 import { useGLTF } from '@react-three/drei';
 import { useFrame } from '@react-three/fiber';
-import { useEffect, useRef, useMemo } from 'react';
-import { AnimationMixer, LoopOnce, LoopRepeat } from 'three';
+import { useEffect, useMemo, useRef } from 'react';
+import { AnimationMixer, LoopOnce, LoopRepeat, SkeletonHelper } from 'three';
 import { ANIMATION_STATES, LOCOMOTION } from '../constants';
 import type { CharacterType } from '../types';
-import { AnimationAction } from 'three';
 
 interface Props {
   characters: CharacterType[];
@@ -19,10 +18,7 @@ const Character: React.FC<Props> = ({
   animationState,
   locomotionState,
 }) => {
-  const mixerRef = useRef<AnimationMixer | null>(null);
-  const animationActionsRef = useRef<{ [key: string]: AnimationAction }>({});
-
-  // Get character data by ID
+  // Find character data
   const character = useMemo(
     () => characters.find((char) => char.id === characterId),
     [characters, characterId]
@@ -32,76 +28,90 @@ const Character: React.FC<Props> = ({
     throw new Error(`Character with id ${characterId} not found`);
   }
 
-  // Pre-load all required models and animations
+  // Load character model
   const characterModel = useGLTF(character.fileName);
-  const animationModels = useMemo(() => {
-    if (!character.animations) return {};
-    return Object.fromEntries(
-      character.animations.map((anim) => [anim.state, useGLTF(anim.fileName)])
-    );
-  }, [character.animations]);
 
-  // Setup mixer and animations
-  useEffect(() => {
-    if (!characterModel.scene || !character.animations) return;
+  const { nodes } = characterModel;
 
-    // Create new mixer
-    const mixer = new AnimationMixer(characterModel.scene);
-    mixerRef.current = mixer;
+  console.log('nodes', nodes.highDetail);
 
-    // Setup all animations
-    character.animations.forEach((animation) => {
-      const animationData = animationModels[animation.state];
-      if (!animationData || !animationData.animations[0]) return;
+  // Initialize animation-related refs
+  const mixer = useMemo(
+    () => new AnimationMixer(characterModel.scene),
+    [characterModel.scene]
+  );
+  const currentAnimationRef = useRef<string | null>(null);
 
-      const action = mixer.clipAction(animationData.animations[0]);
-      action.loop = animation.loop ? LoopRepeat : LoopOnce;
-      if (animation.speed) action.timeScale = animation.speed;
+  // Function to play animations
+  const playAnimation = (state: ANIMATION_STATES, locomotion?: LOCOMOTION) => {
+    if (!character.animations) return;
 
-      animationActionsRef.current[animation.state] = action;
-      if (animation.locomotion) {
-        animationActionsRef.current[animation.locomotion] = action;
+    let targetAnimation;
+    if (state === ANIMATION_STATES.LOCOMOTION && locomotion) {
+      targetAnimation = character.animations.find(
+        (anim) => anim.locomotion === locomotion
+      );
+    } else if (state === ANIMATION_STATES.LOCOMOTION && !locomotion) {
+      targetAnimation = character.animations.find(
+        (anim) => anim.state === ANIMATION_STATES.IDLE
+      );
+    } else {
+      targetAnimation = character.animations.find(
+        (anim) => anim.state === state
+      );
+    }
+
+    if (targetAnimation) {
+      const { animations: loadedAnimations } = useGLTF(
+        targetAnimation.fileName
+      );
+
+      if (
+        loadedAnimations[0] &&
+        currentAnimationRef.current !== targetAnimation.fileName
+      ) {
+        mixer.stopAllAction(); // Stop any currently playing animations
+        const action = mixer.clipAction(loadedAnimations[0]);
+
+        // Configure action
+        action.reset().play();
+        action.loop = targetAnimation.loop ? LoopRepeat : LoopOnce;
+        if (!targetAnimation.loop) {
+          action.clampWhenFinished = true;
+          action.repetitions = 1;
+        }
+        if (targetAnimation.speed) {
+          action.timeScale = targetAnimation.speed;
+        }
+
+        // Update current animation ref
+        currentAnimationRef.current = targetAnimation.fileName;
       }
-    });
+    }
+  };
+
+  useEffect(() => {
+    playAnimation(animationState, locomotionState);
 
     return () => {
       mixer.stopAllAction();
-      Object.values(animationActionsRef.current).forEach((action) =>
-        action.reset()
-      );
     };
-  }, [characterModel.scene, character.animations, animationModels]);
-
-  // Handle animation state changes
-  useEffect(() => {
-    if (!mixerRef.current || !animationActionsRef.current) return;
-
-    const targetAction =
-      animationState === ANIMATION_STATES.LOCOMOTION && locomotionState
-        ? animationActionsRef.current[locomotionState]
-        : animationActionsRef.current[animationState];
-
-    if (targetAction) {
-      // Fade out all other animations
-      Object.values(animationActionsRef.current).forEach((action) => {
-        if (action !== targetAction) action.fadeOut(0.2);
-      });
-
-      // Play the target animation
-      targetAction.reset().fadeIn(0.2).play();
-
-      // Configure non-looping animations
-      if (targetAction.loop === LoopOnce) {
-        targetAction.clampWhenFinished = true;
-        targetAction.repetitions = 1;
-      }
-    }
-  }, [animationState, locomotionState]);
+  }, [animationState, locomotionState, mixer]);
 
   // Update mixer on each frame
   useFrame((_, delta) => {
-    mixerRef.current?.update(delta);
+    mixer.update(delta);
   });
+
+  useEffect(() => {
+    const scene = characterModel.scene;
+    const skeletonHelper = new SkeletonHelper(scene);
+    scene.add(skeletonHelper);
+
+    return () => {
+      scene.remove(skeletonHelper);
+    };
+  }, [characterModel.scene]);
 
   return <primitive object={characterModel.scene} />;
 };

@@ -6,6 +6,13 @@ import {
   SOUND_CATEGORIES,
 } from './constants';
 
+export interface GamepadState {
+  leftStick: { x: number; y: number };
+  rightStick: { x: number; y: number };
+  buttons: boolean[];
+  triggers: { left: number; right: number };
+}
+
 export type Sound = {
   displayName: string; // Display name for the audio (e.g., "Main Theme")
   fileName: string; // Path to the audio file (e.g., "assets/music/main_theme.mp3")

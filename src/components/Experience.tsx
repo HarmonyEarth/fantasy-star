@@ -4,6 +4,8 @@ import {
   Grid,
   useTexture,
   KeyboardControls,
+  Loader,
+  Html,
 } from '@react-three/drei';
 import { Physics, RigidBody } from '@react-three/rapier';
 import { AxesHelper, RepeatWrapping } from 'three';
@@ -11,8 +13,9 @@ import { Perf } from 'r3f-perf';
 import CharacterController from './CharacterController';
 import CameraController from './CameraController';
 import Character from './Character';
+import AnimatedGradient from './AnimatedGradient';
 import { characters } from '../assets/mockData';
-import { ANIMATION_STATES } from '../constants';
+import { ANIMATION_STATES, LOCOMOTION } from '../constants';
 import { Suspense } from 'react';
 import ErrorBoundary from './ErrorBoundary';
 
@@ -48,6 +51,7 @@ const Experience = () => {
               >
                 <planeGeometry args={[100, 100]} />
                 <meshStandardMaterial map={checkerboardTexture} />
+                {/* <AnimatedGradient /> */}
               </mesh>
             </RigidBody>
             <primitive object={new AxesHelper(10)} />
@@ -64,11 +68,18 @@ const Experience = () => {
             />
           </group>
           {/* <CharacterController /> */}
-          <Suspense fallback={null}>
+          <Suspense
+            fallback={
+              <Html>
+                <Loader />
+              </Html>
+            }
+          >
             <Character
               characters={characters}
               characterId={characters[0].id}
-              animationState={ANIMATION_STATES.IDLE}
+              animationState={ANIMATION_STATES.LOCOMOTION}
+              locomotionState={LOCOMOTION.RUNNING}
             />
           </Suspense>
           <CameraController />
