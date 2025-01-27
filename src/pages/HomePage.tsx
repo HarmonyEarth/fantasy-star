@@ -14,7 +14,6 @@ const HomePage = () => {
       <Canvas
         fallback={<div>Sorry no WebGL supported!</div>}
         shadows
-
         // gl={(canvas) => new WebGPURenderer({ canvas, antialias: true })}
       >
         <Experience />

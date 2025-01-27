@@ -64,7 +64,7 @@ export const useGamepad = ({ deadzone = DEFAULT_DEADZONE } = {}) => {
     (e: GamepadEvent) => {
       if (
         e.gamepad.index === selectedGamepadRef.current &&
-        gamepads?.length > 0
+        (gamepads?.length ?? 0) > 0
       ) {
         setSelectedGamepad(0); // Fall back if the selected gamepad is disconnected
       }
@@ -82,7 +82,7 @@ export const useGamepad = ({ deadzone = DEFAULT_DEADZONE } = {}) => {
     });
     window.addEventListener(
       GAMEPAD_EVENTS.DISCONNECTED,
-      handleGamepadDisconnected,
+      handleGamepadDisconnected as EventListener,
       { signal: controller.signal }
     );
 

@@ -31,10 +31,6 @@ const Character: React.FC<Props> = ({
   // Load character model
   const characterModel = useGLTF(character.fileName);
 
-  const { nodes } = characterModel;
-
-  console.log('nodes', nodes.highDetail);
-
   // Initialize animation-related refs
   const mixer = useMemo(
     () => new AnimationMixer(characterModel.scene),

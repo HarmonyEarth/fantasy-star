@@ -37,6 +37,8 @@ const CharacterController: React.FC<Props> = () => {
   const { leftStick, buttons } = gamepadState;
 
   useEffect(() => {
+    const controller = new AbortController();
+
     const onMouseDown = () => {
       isClicking.current = true;
     };
@@ -44,16 +46,21 @@ const CharacterController: React.FC<Props> = () => {
       isClicking.current = false;
     };
 
-    document.addEventListener('mousedown', onMouseDown);
-    document.addEventListener('mouseup', onMouseUp);
-    document.addEventListener('touchstart', onMouseDown);
-    document.addEventListener('touchend', onMouseUp);
+    document.addEventListener('mousedown', onMouseDown, {
+      signal: controller.signal,
+    });
+    document.addEventListener('mouseup', onMouseUp, {
+      signal: controller.signal,
+    });
+    document.addEventListener('touchstart', onMouseDown, {
+      signal: controller.signal,
+    });
+    document.addEventListener('touchend', onMouseUp, {
+      signal: controller.signal,
+    });
 
     return () => {
-      document.removeEventListener('mousedown', onMouseDown);
-      document.removeEventListener('mouseup', onMouseUp);
-      document.removeEventListener('touchstart', onMouseDown);
-      document.removeEventListener('touchend', onMouseUp);
+      controller.abort();
     };
   }, []);
 
