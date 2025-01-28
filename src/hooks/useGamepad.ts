@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { GamepadState } from '../types';
 
 const GAMEPAD_EVENTS = {
   CONNECTED: 'gamepadconnected',
@@ -39,7 +40,7 @@ const getGamepads = async () => {
 
 export const useGamepad = ({ deadzone = DEFAULT_DEADZONE } = {}) => {
   const [selectedGamepad, setSelectedGamepad] = useState(0);
-  const [gamepadState, setGamepadState] = useState({
+  const [gamepadState, setGamepadState] = useState<GamepadState>({
     leftStick: { x: 0, y: 0 },
     rightStick: { x: 0, y: 0 },
     buttons: [],

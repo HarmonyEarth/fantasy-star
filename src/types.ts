@@ -1,3 +1,4 @@
+import { Vector3 } from 'three';
 import {
   ANIMATION_STATES,
   ATTACK_LEVELS,
@@ -36,7 +37,7 @@ export type CharacterAnimation = {
   id: string;
   loop?: boolean;
 };
-export interface CharacterType {
+export interface Character {
   name: string; // The name of the character (e.g., "Player", "Enemy")
   fileName: string; // File path for the character model (e.g., "assets/characters/player.glb")
   life: number; // Character's current life (e.g., 100 health points)
@@ -45,6 +46,12 @@ export interface CharacterType {
   speed?: number; // Movement speed of the character (optional, but useful for locomotion logic)
   id: string; // Unique identifier for the character (e.g., "player", "enemy1")
   size: number; // Size of the character (e.g., 1.0 for normal size)
+}
+
+export interface Player {
+  id: string;
+  position: Vector3;
+  characterId: string;
 }
 
 export interface Customization {
@@ -60,70 +67,3 @@ export interface InputDevice {
   type: INPUT_DEVICES;
   emoji: string;
 }
-
-// export type AudioData = {
-//     name: string;
-//     file: string;
-//     type: AUDIO;
-//     volume: number;
-//     loop: boolean;
-//     delay: number;
-//     offset: number;
-//     duration: number;
-//     spatial: boolean;
-//     distance: number;
-//     rolloff: number;
-//     refDistance: number;
-//     maxDistance: number;
-//     coneInnerAngle: number;
-//     coneOuterAngle: number;
-//     coneOuterGain: number;
-//     playbackRate: number;
-//     startTime: number;
-//     stopTime: number;
-//     fadeIn: number;
-//     fadeOut: number;
-//     startTimeRange: number;
-//     stopTimeRange: number;
-//     fadeInRange: number;
-//     fadeOutRange: number;
-//     startTimeOffset: number;
-//     stopTimeOffset: number;
-//     fadeInOffset: number;
-//     fadeOutOffset: number;
-//     startTimeRandomness: number;
-//     stopTimeRandomness: number;
-//     fadeInRandomness: number;
-//     fadeOutRandomness: number;
-//     startTimeRandomnessRange: number;
-//     stopTimeRandomnessRange: number;
-//     fadeInRandomnessRange: number;
-//     fadeOutRandomnessRange: number;
-//     startTimeRandomnessOffset: number;
-//     stopTimeRandomnessOffset: number;
-//     fadeInRandomnessOffset: number;
-//     fadeOutRandomnessOffset: number;
-//     startTimeRandomnessFactor: number;
-//     stopTimeRandomnessFactor: number;
-//     fadeInRandomnessFactor: number;
-//     fadeOutRandomnessFactor: number;
-//     startTimeRandomnessFactorRange: number;
-//     stopTimeRandomnessFactorRange: number;
-//     fadeInRandomnessFactorRange: number;
-//     fadeOutRandomnessFactorRange: number;
-//     startTimeRandomnessFactorOffset: number;
-//     stopTimeRandomnessFactorOffset: number;
-//     fadeInRandomnessFactorOffset: number;
-//     fadeOutRandomnessFactorOffset: number;
-//     startTimeRandomnessFactorRandomness: number;
-//     stopTimeRandomnessFactorRandomness: number;
-//     fadeInRandomnessFactorRandomness: number;
-//     fadeOutRandomnessFactorRandomness: number;
-//     startTimeRandomnessFactorRandomnessRange: number;
-//     stopTimeRandomnessFactorRandomnessRange: number;
-//     fadeInRandomnessFactorRandomnessRange: number;
-//     fadeOutRandomnessFactorRandomnessRange: number;
-//     startTimeRandomnessFactorRandomnessOffset: number;
-//     stopTimeRandomnessFactorRandomnessOffset: number;
-//     fadeInRandomnessFactorRandomnessOffset: number;
-//   };

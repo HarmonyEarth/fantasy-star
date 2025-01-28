@@ -3,10 +3,10 @@ import { useFrame } from '@react-three/fiber';
 import { useEffect, useMemo, useRef } from 'react';
 import { AnimationMixer, LoopOnce, LoopRepeat, SkeletonHelper } from 'three';
 import { ANIMATION_STATES, LOCOMOTION } from '../constants';
-import type { CharacterType } from '../types';
+import type { Character } from '../types';
 
 interface Props {
-  characters: CharacterType[];
+  characters: Character[];
   characterId: string;
   animationState: ANIMATION_STATES;
   locomotionState?: LOCOMOTION;
@@ -30,7 +30,7 @@ const Character: React.FC<Props> = ({
 
   // Load character model
   const characterModel = useGLTF(character.fileName);
-
+  //https://preview.babylonjs.com/meshopt_decoder.js
   // Initialize animation-related refs
   const mixer = useMemo(
     () => new AnimationMixer(characterModel.scene),
@@ -99,15 +99,15 @@ const Character: React.FC<Props> = ({
     mixer.update(delta);
   });
 
-  useEffect(() => {
-    const scene = characterModel.scene;
-    const skeletonHelper = new SkeletonHelper(scene);
-    scene.add(skeletonHelper);
+  // useEffect(() => {
+  //   const scene = characterModel.scene;
+  //   const skeletonHelper = new SkeletonHelper(scene);
+  //   scene.add(skeletonHelper);
 
-    return () => {
-      scene.remove(skeletonHelper);
-    };
-  }, [characterModel.scene]);
+  //   return () => {
+  //     scene.remove(skeletonHelper);
+  //   };
+  // }, [characterModel.scene]);
 
   return <primitive object={characterModel.scene} />;
 };

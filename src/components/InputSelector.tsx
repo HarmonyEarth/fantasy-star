@@ -1,47 +1,36 @@
-import { useEffect, useMemo } from 'react';
 import { useAtom } from 'jotai';
-import { useGamepad } from '../hooks/useGamepad';
-import { availableDevicesAtom, selectedInputDeviceAtom } from '../store';
+import { selectedInputDeviceAtom } from '../store';
 import { INPUT_DEVICES } from '../constants';
 import type { InputDevice } from '../types';
 
+const devices: InputDevice[] = [
+  {
+    id: 'keyboard',
+    name: 'Keyboard & Mouse',
+    type: INPUT_DEVICES.KEYBOARD,
+    emoji: '⌨️',
+  },
+  {
+    id: 'gamepad-1',
+    name: 'Controller 1',
+    type: INPUT_DEVICES.GAMEPAD,
+    emoji: '🎮',
+  },
+  {
+    id: 'touch',
+    name: 'Touch Controls',
+    type: INPUT_DEVICES.TOUCH,
+    emoji: '👆',
+  },
+];
+
 const InputDeviceSelector = () => {
-  // const { activeGamepads, selectGamepad } = useGamepad();
-  const [availableDevices, setAvailableDevices] = useAtom(availableDevicesAtom);
   const [selectedDevice, setSelectedDevice] = useAtom(selectedInputDeviceAtom);
-
-  // console.log('Selected Device: ', selectedDevice);
-
-  // // Memoize the updated devices list to avoid unnecessary re-renders
-  // const updatedDevices = useMemo(() => {
-  //   const updatedDevices = availableDevices.filter(
-  //     (d) => d.type !== INPUT_DEVICES.GAMEPAD
-  //   );
-  //   activeGamepads.forEach((gamepad, index) => {
-  //     updatedDevices.push({
-  //       id: `gamepad-${index}`,
-  //       name: gamepad.id || `Controller ${index + 1}`,
-  //       type: INPUT_DEVICES.GAMEPAD,
-  //       emoji: '🎮',
-  //     });
-  //   });
-  //   return updatedDevices;
-  // }, [activeGamepads, availableDevices]);
-
-  // // Update available devices only when active gamepads change
-  // useEffect(() => {
-  //   if (JSON.stringify(updatedDevices) !== JSON.stringify(availableDevices)) {
-  //     setAvailableDevices(updatedDevices);
-  //   }
-  // }, [updatedDevices, availableDevices, setAvailableDevices]);
 
   const handleDeviceSelect = (device: InputDevice) => {
     if (device.id !== selectedDevice.id) {
       setSelectedDevice(device);
-      // if (device.type === INPUT_DEVICES.GAMEPAD) {
-      //   const gamepadIndex = parseInt(device.id.split('-')[1]);
-      //   selectGamepad(gamepadIndex);
-      // }
+      // Additional logic for gamepad selection can be added here if needed
     }
   };
 
@@ -49,7 +38,7 @@ const InputDeviceSelector = () => {
     <div className="w-1/6 bg-black/80 backdrop-blur-sm rounded-lg p-4 text-white">
       <h2 className="text-lg font-bold mb-3">Input Device</h2>
       <div className="space-y-2">
-        {availableDevices.map((device) => (
+        {devices.map((device) => (
           <button
             key={device.id}
             onClick={() => handleDeviceSelect(device)}
