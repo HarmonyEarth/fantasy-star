@@ -1,17 +1,17 @@
-import { Environment, Stats, KeyboardControls } from '@react-three/drei';
+import { Environment, Stats, KeyboardControls, Sky } from '@react-three/drei';
 import { Physics } from '@react-three/rapier';
 import { Perf } from 'r3f-perf';
 import CharacterController from './CharacterController';
 import CameraController from './CameraController';
-
 import Field from './Field';
+import PropObjects from './PropObjects';
 
 const keyboardMap = [
   { name: 'forward', keys: ['ArrowUp', 'KeyW'] },
   { name: 'backward', keys: ['ArrowDown', 'KeyS'] },
   { name: 'left', keys: ['ArrowLeft', 'KeyA'] },
   { name: 'right', keys: ['ArrowRight', 'KeyD'] },
-  { name: 'run', keys: ['Shift'] },
+  { name: 'jump', keys: ['Space'] },
 ];
 
 const Experience = () => {
@@ -19,12 +19,13 @@ const Experience = () => {
     <>
       <Perf minimal />
       <Stats />
-      <ambientLight intensity={0.5} />
-      <directionalLight position={[10, 10, 10]} intensity={1} castShadow />
-      <Environment preset="sunset" background backgroundBlurriness={0.3} />{' '}
+      <ambientLight intensity={1} />
+      <directionalLight intensity={5} position={[15, 100, 150]} />
+      <Sky azimuth={2} sunPosition={[0, 0, 30]} />
       <KeyboardControls map={keyboardMap}>
-        <Physics debug>
+        <Physics>
           <Field />
+          <PropObjects />
           <CharacterController />
         </Physics>
         <CameraController />

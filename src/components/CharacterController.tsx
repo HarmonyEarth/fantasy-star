@@ -1,27 +1,27 @@
-import { useFrame } from '@react-three/fiber';
+import { useFrame, useThree } from '@react-three/fiber';
 import {
   CapsuleCollider,
   RigidBody,
   RapierRigidBody,
-  useRapier,
 } from '@react-three/rapier';
-import { useRef, useEffect, Suspense } from 'react';
+import { useRef, Suspense, useState } from 'react';
 import { Group, Vector3, ArrowHelper } from 'three';
 import { useAtom } from 'jotai';
 import { useKeyboardControls, Loader, Html } from '@react-three/drei';
+import { useGamepad } from '../hooks/useGamepad';
+import { useTouch } from '../hooks/useTouch';
 import {
   characterPositionAtom,
-  characterRotationAtom,
+  playerCharacterIdAtom,
   selectedInputDeviceAtom,
 } from '../store';
-import { useGamepad } from '../hooks/useGamepad';
 import { ANIMATION_STATES, INPUT_DEVICES, LOCOMOTION } from '../constants';
 import Character from './Character';
 import { characters } from '../assets/mockData';
 
-const WALK_SPEED = 4;
 const RUN_SPEED = 8;
 const ROTATION_SPEED = 0.1;
+const VELOCITY_LERP_FACTOR = 10;
 
 interface Props {
   characterId?: string;
@@ -29,135 +29,109 @@ interface Props {
 }
 
 const CharacterController: React.FC<Props> = () => {
-  const characterRef = useRef<Group>(null);
-  const rigidBodyRef = useRef<RapierRigidBody>(null);
-  const arrowHelperRef = useRef<ArrowHelper>(null);
-  const isClicking = useRef<boolean>(false);
-  const moveDirection = useRef<Vector3>(new Vector3());
-  const currentRotation = useRef<number>(0);
-  const mousePosRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
-
-  const [, setCharacterPosition] = useAtom(characterPositionAtom);
-  const [, setCharacterRotation] = useAtom(characterRotationAtom);
+  const [playerCharacterId] = useAtom(playerCharacterIdAtom);
+  const [characterPosition, setCharacterPosition] = useAtom(
+    characterPositionAtom
+  );
   const [selectedDevice] = useAtom(selectedInputDeviceAtom);
-  const [, get] = useKeyboardControls();
+  const [animationState, setAnimationState] = useState(ANIMATION_STATES.IDLE);
+  const [locomotionState, setLocomotionState] = useState<
+    LOCOMOTION | undefined
+  >(undefined);
 
+  const rigidBodyRef = useRef<RapierRigidBody>(null);
+  const characterRef = useRef<Group>(null);
+  const arrowHelperRef = useRef<ArrowHelper>(null);
+  const moveDirection = useRef(new Vector3());
+  const currentRotation = useRef(0);
+
+  const { camera } = useThree();
   const { gamepadState, isConnected } = useGamepad();
-  const { leftStick, buttons } = gamepadState;
+  const { leftStick } = gamepadState;
+  const { active: touchActive, direction: touchDirection } = useTouch(
+    selectedDevice.type === INPUT_DEVICES.TOUCH
+  );
+  const [, getKeyboard] = useKeyboardControls();
 
-  useEffect(() => {
-    const controller = new AbortController();
+  // Helper to compute movement direction based on input
+  const computeMoveDirection = () => {
+    moveDirection.current.set(0, 0, 0);
+    const cameraForward = new Vector3();
+    camera.getWorldDirection(cameraForward);
+    cameraForward.y = 0;
+    cameraForward.normalize();
+    const cameraRight = new Vector3()
+      .crossVectors(cameraForward, new Vector3(0, 1, 0))
+      .normalize();
 
-    const handlePointer = (active: boolean) => (e: MouseEvent | TouchEvent) => {
-      isClicking.current = active;
-      if (active) {
-        if (e instanceof MouseEvent) {
-          mousePosRef.current = { x: e.clientX, y: e.clientY };
-        } else {
-          mousePosRef.current = {
-            x: e.touches[0].clientX,
-            y: e.touches[0].clientY,
-          };
-        }
+    switch (selectedDevice.type) {
+      case INPUT_DEVICES.KEYBOARD: {
+        const keys = getKeyboard();
+        if (keys.forward) moveDirection.current.add(cameraForward);
+        if (keys.backward) moveDirection.current.sub(cameraForward);
+        if (keys.left) moveDirection.current.sub(cameraRight);
+        if (keys.right) moveDirection.current.add(cameraRight);
+        break;
       }
-    };
-
-    document.addEventListener('mousedown', handlePointer(true), {
-      signal: controller.signal,
-    });
-    document.addEventListener('mouseup', handlePointer(false), {
-      signal: controller.signal,
-    });
-    document.addEventListener('touchstart', handlePointer(true), {
-      signal: controller.signal,
-    });
-    document.addEventListener('touchend', handlePointer(false), {
-      signal: controller.signal,
-    });
-
-    return () => controller.abort();
-  }, []);
+      case INPUT_DEVICES.GAMEPAD:
+        if (isConnected) {
+          moveDirection.current.add(
+            cameraForward.clone().multiplyScalar(-leftStick.y)
+          );
+          moveDirection.current.add(
+            cameraRight.clone().multiplyScalar(leftStick.x)
+          );
+        }
+        break;
+      case INPUT_DEVICES.TOUCH:
+        if (touchActive) {
+          moveDirection.current.add(
+            cameraForward.clone().multiplyScalar(-touchDirection.y)
+          );
+          moveDirection.current.add(
+            cameraRight.clone().multiplyScalar(touchDirection.x)
+          );
+        }
+        break;
+    }
+  };
 
   useFrame((state, delta) => {
     if (!rigidBodyRef.current || !characterRef.current) return;
 
-    const speed = get().run ? RUN_SPEED : WALK_SPEED;
-    moveDirection.current.set(0, 0, 0);
+    computeMoveDirection();
+    const lerpFactor = 1 - Math.exp(-VELOCITY_LERP_FACTOR * delta);
+    const currentVel = rigidBodyRef.current.linvel();
 
-    // Handle input based on device type
-    switch (selectedDevice.type) {
-      case INPUT_DEVICES.KEYBOARD:
-        if (get().forward) moveDirection.current.z += 1;
-        if (get().backward) moveDirection.current.z -= 1;
-        if (get().left) moveDirection.current.x -= 1;
-        if (get().right) moveDirection.current.x += 1; // Fixed: increment x for right
-        break;
-
-      case INPUT_DEVICES.GAMEPAD:
-        if (
-          isConnected &&
-          (Math.abs(leftStick.x) > 0.1 || Math.abs(leftStick.y) > 0.1)
-        ) {
-          moveDirection.current.x = -leftStick.x;
-          moveDirection.current.z = leftStick.y;
-        }
-        break;
-
-      case INPUT_DEVICES.TOUCH:
-        if (isClicking.current) {
-          // Convert screen coordinates to normalized direction
-          const rect = state.gl.domElement.getBoundingClientRect();
-          const x = ((mousePosRef.current.x - rect.left) / rect.width) * 2 - 1;
-          const y = -((mousePosRef.current.y - rect.top) / rect.height) * 2 + 1;
-          moveDirection.current.set(x, 0, -y).normalize();
-        }
-        break;
-    }
-
-    // Normalize movement vector
     if (moveDirection.current.lengthSq() > 0.01) {
+      setAnimationState(ANIMATION_STATES.LOCOMOTION);
+      setLocomotionState(LOCOMOTION.RUNNING);
       moveDirection.current.normalize();
-
-      // Calculate target rotation based on movement direction
       const targetRotation = Math.atan2(
         moveDirection.current.x,
         moveDirection.current.z
       );
-
-      // Smoothly interpolate current rotation
       currentRotation.current = lerpAngle(
         currentRotation.current,
         targetRotation,
         ROTATION_SPEED
       );
-
-      // Apply movement in the rotated direction
-      const velocity = new Vector3(
-        Math.sin(currentRotation.current) * speed,
-        rigidBodyRef.current.linvel().y,
-        Math.cos(currentRotation.current) * speed
+      const targetVelocity = new Vector3(
+        Math.sin(currentRotation.current) * RUN_SPEED,
+        currentVel.y,
+        Math.cos(currentRotation.current) * RUN_SPEED
       );
-
-      rigidBodyRef.current.setLinvel(velocity, true);
-
-      // Update character visual rotation
+      const impulse = targetVelocity.sub(currentVel).multiplyScalar(0.5);
+      rigidBodyRef.current.applyImpulse(impulse, true);
       characterRef.current.rotation.y = currentRotation.current;
-
-      // Update rotation atom with Vector3
-      setCharacterRotation(new Vector3(0, currentRotation.current, 0));
     } else {
-      // Stop horizontal movement when no input
-      rigidBodyRef.current.setLinvel(
-        { x: 0, y: rigidBodyRef.current.linvel().y, z: 0 },
-        true
-      );
+      setAnimationState(ANIMATION_STATES.IDLE);
+      setLocomotionState(undefined);
+      const impulse = new Vector3(0, currentVel.y, 0)
+        .sub(currentVel)
+        .multiplyScalar(0.5);
+      rigidBodyRef.current.applyImpulse(impulse, true);
     }
-
-    // Update position atom
-    const translation = rigidBodyRef.current.translation();
-    setCharacterPosition(
-      new Vector3(translation.x, translation.y, translation.z)
-    );
 
     // Update arrow helper
     if (arrowHelperRef.current) {
@@ -165,56 +139,56 @@ const CharacterController: React.FC<Props> = () => {
       arrowHelperRef.current.position.copy(characterRef.current.position);
       arrowHelperRef.current.rotation.y = currentRotation.current;
     }
+
+    // Re-add update: sync characterPosition atom with physics simulation
+    const { x, y, z } = rigidBodyRef.current.translation();
+    setCharacterPosition(new Vector3(x, y, z));
   });
 
   return (
-    <RigidBody
-      ref={rigidBodyRef}
-      colliders={false}
-      mass={1}
-      type="dynamic"
-      position={[0, 1, 0]}
-      enabledRotations={[false, false, false]}
-    >
-      <group ref={characterRef}>
-        <CapsuleCollider args={[1, 0.4]} />
-
-        <Suspense
-          fallback={
-            <Html>
-              <Loader />
-            </Html>
-          }
-        >
-          <Character
-            characters={characters}
-            characterId={characters[1].id}
-            animationState={ANIMATION_STATES.LOCOMOTION}
-            locomotionState={LOCOMOTION.RUNNING}
-          />
-        </Suspense>
-        <arrowHelper
-          ref={arrowHelperRef}
-          args={[new Vector3(0, 0, 1), new Vector3(0, 1, 0), 2, 0x0000ff]}
-        />
-      </group>
-    </RigidBody>
+    <group>
+      <RigidBody
+        ref={rigidBodyRef}
+        colliders={false}
+        mass={1}
+        type="dynamic"
+        position={characterPosition}
+        enabledRotations={[false, false, false]}
+      >
+        <group ref={characterRef}>
+          <Suspense
+            fallback={
+              <Html>
+                <Loader />
+              </Html>
+            }
+          >
+            <Character
+              characters={characters}
+              characterId={playerCharacterId}
+              animationState={animationState}
+              locomotionState={locomotionState}
+            />
+          </Suspense>
+          {/* <arrowHelper
+            ref={arrowHelperRef}
+            args={[new Vector3(0, 0, 1), new Vector3(0, 1, 0), 2, 0x0000ff]}
+          /> */}
+          <CapsuleCollider args={[0.6, 0.4]} />
+        </group>
+      </RigidBody>
+    </group>
   );
 };
 
 export default CharacterController;
 
-// Utility functions
-const normalizeAngle = (angle: number): number => {
-  return ((angle % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
-};
+const normalizeAngle = (angle: number): number =>
+  ((angle % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
 
 const lerpAngle = (start: number, end: number, t: number): number => {
   start = normalizeAngle(start);
   end = normalizeAngle(end);
-
-  const diff = end - start;
-  const shortestDiff = normalizeAngle(diff + Math.PI) - Math.PI;
-
-  return normalizeAngle(start + shortestDiff * t);
+  const diff = normalizeAngle(end - start + Math.PI) - Math.PI;
+  return normalizeAngle(start + diff * t);
 };

@@ -24,7 +24,7 @@ const devices: InputDevice[] = [
   },
 ];
 
-const InputDeviceSelector = () => {
+const InputSelector = () => {
   const [selectedDevice, setSelectedDevice] = useAtom(selectedInputDeviceAtom);
 
   const handleDeviceSelect = (device: InputDevice) => {
@@ -35,7 +35,7 @@ const InputDeviceSelector = () => {
   };
 
   return (
-    <div className="w-1/6 bg-black/80 backdrop-blur-sm rounded-lg p-4 text-white">
+    <div className="w-full sm:w-1/6 bg-black/80 backdrop-blur-sm rounded-lg p-4 text-white">
       <h2 className="text-lg font-bold mb-3">Input Device</h2>
       <div className="space-y-2">
         {devices.map((device) => (
@@ -59,4 +59,4 @@ const InputDeviceSelector = () => {
   );
 };
 
-export default InputDeviceSelector;
+export default InputSelector;

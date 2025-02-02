@@ -19,7 +19,6 @@
     "@tanstack/react-query": "^5.62.8",
     "@tanstack/react-router": "^1.91.2",
     "jotai": "^2.10.4",
-    "nipplejs": "^0.10.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "three": "^0.171.0"

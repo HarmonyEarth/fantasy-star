@@ -10,14 +10,9 @@ const Field = () => {
   return (
     <group>
       <RigidBody type="fixed">
-        <mesh
-          receiveShadow
-          position={[0, 0, 0]}
-          rotation={[-Math.PI / 2, 0, 0]}
-        >
+        <mesh position={[0, 0, 0]} rotation={[-Math.PI / 2, 0, 0]}>
           <planeGeometry args={[100, 100]} />
           <meshStandardMaterial map={checkerboardTexture} />
-          {/* <AnimatedGradient /> */}
         </mesh>
       </RigidBody>
       <primitive object={new AxesHelper(10)} position={[0, 0.5, 0]} />

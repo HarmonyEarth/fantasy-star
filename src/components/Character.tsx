@@ -7,7 +7,7 @@ import type { Character } from '../types';
 
 interface Props {
   characters: Character[];
-  characterId: string;
+  characterId: string | null;
   animationState: ANIMATION_STATES;
   locomotionState?: LOCOMOTION;
 }
@@ -30,7 +30,7 @@ const Character: React.FC<Props> = ({
 
   // Load character model
   const characterModel = useGLTF(character.fileName);
-  //https://preview.babylonjs.com/meshopt_decoder.js
+
   // Initialize animation-related refs
   const mixer = useMemo(
     () => new AnimationMixer(characterModel.scene),
@@ -109,7 +109,11 @@ const Character: React.FC<Props> = ({
   //   };
   // }, [characterModel.scene]);
 
-  return <primitive object={characterModel.scene} />;
+  return characterId ? (
+    <group position-y={-1}>
+      <primitive object={characterModel.scene} />
+    </group>
+  ) : null;
 };
 
 export default Character;

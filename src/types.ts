@@ -46,6 +46,7 @@ export interface Character {
   speed?: number; // Movement speed of the character (optional, but useful for locomotion logic)
   id: string; // Unique identifier for the character (e.g., "player", "enemy1")
   size: number; // Size of the character (e.g., 1.0 for normal size)
+  icon: string;
 }
 
 export interface Player {

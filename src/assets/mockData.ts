@@ -87,6 +87,7 @@ const Tifa: Character = {
   size: 1,
   animations: tifaAnimations,
   sounds: tifaSounds,
+  icon: '🥊',
 };
 
 const cloudId = 'Cloud';
@@ -154,6 +155,7 @@ const Cloud: Character = {
   size: 1,
   animations: cloudAnimations,
   sounds: cloudSounds,
+  icon: '🗡️',
 };
 
 export const characters = [Tifa, Cloud];

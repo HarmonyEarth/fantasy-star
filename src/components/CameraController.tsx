@@ -4,7 +4,6 @@ import { Object3D, Vector3, MathUtils } from 'three';
 import { useAtom } from 'jotai';
 import {
   characterPositionAtom,
-  characterRotationAtom,
   cameraModeAtom,
   selectedInputDeviceAtom,
 } from '../store';
@@ -15,16 +14,14 @@ const CAMERA_DISTANCE = 5;
 const CAMERA_HEIGHT = 2;
 const CAMERA_MIN_HEIGHT = 1;
 const POSITION_LERP_FACTOR = 0.1;
-const ROTATION_LERP_FACTOR = 0.1;
 const GAMEPAD_ROTATION_SPEED = 2;
 const MOUSE_ROTATION_SPEED = 0.002;
-const INPUT_RETURN_LERP_FACTOR = 0.05; // Smooth return for both gamepad and mouse
+const INPUT_RETURN_LERP_FACTOR = 0.05;
 
 const CameraController = () => {
   const { camera, scene, gl } = useThree();
   const [selectedDevice] = useAtom(selectedInputDeviceAtom);
   const [characterPosition] = useAtom(characterPositionAtom);
-  const [characterRotation] = useAtom(characterRotationAtom);
   const [cameraMode] = useAtom(cameraModeAtom);
 
   const cameraRig = useRef<Object3D>(new Object3D());
@@ -35,58 +32,51 @@ const CameraController = () => {
   const lastMouseX = useRef<number>(0);
   const isUsingInput = useRef<boolean>(false);
 
+  // Persistent temporary vector to avoid allocations
+  const cameraOffset = useRef(new Vector3());
+
   const { gamepadState, isConnected } = useGamepad();
   const { rightStick } = gamepadState;
 
   useEffect(() => {
     const controller = new AbortController();
-
     scene.add(cameraRig.current);
 
-    const handleMouseDown = (e: MouseEvent) => {
-      if (e.button === 0) {
-        // Left mouse button
+    const handleMouseEvent = (e: MouseEvent, type: 'down' | 'up' | 'move') => {
+      if (type === 'down' && e.button === 0) {
         isRotating.current = true;
         lastMouseX.current = e.clientX;
       }
-    };
-
-    const handleMouseUp = (e: MouseEvent) => {
-      if (e.button === 0) {
+      if (type === 'up' && e.button === 0) {
         isRotating.current = false;
-        // Update the lastInputRotation to the current rotation when mouse stops
-        if (selectedDevice.type === INPUT_DEVICES.KEYBOARD) {
+        if (selectedDevice.type === INPUT_DEVICES.KEYBOARD)
           lastInputRotation.current = currentRotation.current;
-        }
       }
-    };
-
-    const handleMouseMove = (e: MouseEvent) => {
-      if (isRotating.current) {
+      if (type === 'move' && isRotating.current) {
         const deltaX = e.movementX;
-
-        // Rotate horizontally
         currentRotation.current -= deltaX * MOUSE_ROTATION_SPEED;
-
-        // Update lastInputRotation during active mouse movement
         if (selectedDevice.type === INPUT_DEVICES.KEYBOARD) {
           lastInputRotation.current = currentRotation.current;
         }
       }
     };
 
-    const handleContextMenu = (e: Event) => e.preventDefault();
-
-    gl.domElement.addEventListener('mousedown', handleMouseDown, {
-      signal: controller.signal,
-    });
-    gl.domElement.addEventListener('mouseup', handleMouseUp, {
-      signal: controller.signal,
-    });
-    gl.domElement.addEventListener('mousemove', handleMouseMove, {
-      signal: controller.signal,
-    });
-    gl.domElement.addEventListener('contextmenu', handleContextMenu, {
+    gl.domElement.addEventListener(
+      'mousedown',
+      (e) => handleMouseEvent(e, 'down'),
+      { signal: controller.signal }
+    );
+    gl.domElement.addEventListener(
+      'mouseup',
+      (e) => handleMouseEvent(e, 'up'),
+      { signal: controller.signal }
+    );
+    gl.domElement.addEventListener(
+      'mousemove',
+      (e) => handleMouseEvent(e, 'move'),
+      { signal: controller.signal }
+    );
+    gl.domElement.addEventListener('contextmenu', (e) => e.preventDefault(), {
       signal: controller.signal,
     });
 
@@ -99,72 +89,55 @@ const CameraController = () => {
   useFrame((state, delta) => {
     if (cameraMode !== CAMERA_MODES.GAME) return;
 
-    // Update camera rig position to follow character
     targetPosition.current.copy(characterPosition);
-    cameraRig.current.position.lerp(
-      targetPosition.current,
-      POSITION_LERP_FACTOR
+    // Calculate dynamic follow speed: if distance > 1, increase follow rate.
+    const distance = cameraRig.current.position.distanceTo(
+      targetPosition.current
     );
+    const followSpeed =
+      distance > 1
+        ? Math.min(1, POSITION_LERP_FACTOR + (distance - 1) * 0.5)
+        : POSITION_LERP_FACTOR;
+    cameraRig.current.position.lerp(targetPosition.current, followSpeed);
 
-    // Handle input based on device type
-    if (selectedDevice.type === INPUT_DEVICES.GAMEPAD && isConnected) {
-      // Gamepad input handling
-      if (Math.abs(rightStick.x) > 0.1) {
-        isUsingInput.current = true;
-        const rotation = rightStick.x * GAMEPAD_ROTATION_SPEED * delta;
-        currentRotation.current += rotation;
-        lastInputRotation.current = currentRotation.current;
-      } else if (isUsingInput.current && !isRotating.current) {
-        // Smoothly interpolate back to the last gamepad rotation
-        currentRotation.current = MathUtils.lerp(
-          currentRotation.current,
-          lastInputRotation.current,
-          INPUT_RETURN_LERP_FACTOR
-        );
+    // Handle rotation input
+    const processRotation = () => {
+      if (selectedDevice.type === INPUT_DEVICES.GAMEPAD && isConnected) {
+        if (Math.abs(rightStick.x) > 0.1) {
+          isUsingInput.current = true;
+          currentRotation.current +=
+            rightStick.x * GAMEPAD_ROTATION_SPEED * delta;
+          lastInputRotation.current = currentRotation.current;
+        } else if (isUsingInput.current && !isRotating.current) {
+          currentRotation.current = MathUtils.lerp(
+            currentRotation.current,
+            lastInputRotation.current,
+            INPUT_RETURN_LERP_FACTOR
+          );
+        }
+      } else if (selectedDevice.type === INPUT_DEVICES.KEYBOARD) {
+        if (!isRotating.current && isUsingInput.current) {
+          currentRotation.current = MathUtils.lerp(
+            currentRotation.current,
+            lastInputRotation.current,
+            INPUT_RETURN_LERP_FACTOR
+          );
+        }
+        isUsingInput.current = isRotating.current;
       }
-    } else if (selectedDevice.type === INPUT_DEVICES.KEYBOARD) {
-      // Keyboard/Mouse input handling
-      if (!isRotating.current && isUsingInput.current) {
-        // Smoothly interpolate back to the last mouse rotation
-        currentRotation.current = MathUtils.lerp(
-          currentRotation.current,
-          lastInputRotation.current,
-          INPUT_RETURN_LERP_FACTOR
-        );
-      }
-    }
+    };
 
-    // Reset input state when switching devices
-    if (selectedDevice.type !== INPUT_DEVICES.GAMEPAD) {
-      isUsingInput.current = isRotating.current;
-    }
+    processRotation();
 
-    // Only align with character rotation when:
-    // 1. Character is moving
-    // 2. Not actively rotating with input
-    // 3. Not using any input device
-    const isMoving = characterPosition.lengthSq() > 0.01;
-    const shouldAlignWithCharacter =
-      isMoving && !isRotating.current && !isUsingInput.current;
-
-    if (shouldAlignWithCharacter) {
-      currentRotation.current = MathUtils.lerp(
-        currentRotation.current,
-        characterRotation.y,
-        ROTATION_LERP_FACTOR
-      );
-    }
-
-    // Calculate and update camera position
-    const cameraOffset = new Vector3(
+    // Update the persistent cameraOffset vector instead of creating a new one
+    cameraOffset.current.set(
       -Math.sin(currentRotation.current) * CAMERA_DISTANCE,
       CAMERA_HEIGHT,
       -Math.cos(currentRotation.current) * CAMERA_DISTANCE
     );
-
-    camera.position.copy(targetPosition.current).add(cameraOffset);
+    camera.position.copy(cameraRig.current.position).add(cameraOffset.current);
     camera.position.y = Math.max(camera.position.y, CAMERA_MIN_HEIGHT);
-    camera.lookAt(targetPosition.current);
+    camera.lookAt(cameraRig.current.position);
   });
 
   return null;

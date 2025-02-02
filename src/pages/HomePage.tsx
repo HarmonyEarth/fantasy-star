@@ -4,26 +4,29 @@ import Experience from '../components/Experience';
 import { SocketManager } from '../components/SocketManager';
 import type { Character } from '../types';
 import { characters } from '../assets/mockData';
-import InputDeviceSelector from '../components/InputSelector';
 import { WebGPURenderer } from 'three/webgpu';
-import { useEffect } from 'react';
+import InputSelector from '../components/InputSelector';
+import TouchControls from '../components/TouchControls';
+import CharacterSelect from '../components/CharacterSelect';
 
 const HomePage = () => {
-  useEffect(() => {
-    const initGPU = async () => {
-      const adapter = await navigator.gpu.requestAdapter();
-      const device = await adapter?.requestDevice();
-      console.log('device', device);
-    };
-    initGPU();
-  }, []);
+  // useEffect(() => {
+  //   const initGPU = async () => {
+  //     const adapter = await navigator.gpu.requestAdapter();
+  //     const device = await adapter?.requestDevice();
+  //     console.log('device', device);
+  //   };
+  //   initGPU();
+  // }, []);
   return (
-    <div className="w-full h-screen">
-      <InputDeviceSelector />
+    <div className="w-full h-screen relative">
       <SocketManager />
+      <div className="flex flex-col sm:flex-row justify-evenly items-center space-y-4 sm:space-y-0 sm:space-x-4">
+        <InputSelector />
+        <CharacterSelect />
+      </div>
       <Canvas
         fallback={<div>Sorry no WebGL supported!</div>}
-        shadows
         onCreated={({ gl }) => {
           if (navigator.gpu) {
             console.log(
@@ -34,7 +37,7 @@ const HomePage = () => {
             const webGPURenderer = new WebGPURenderer({ canvas });
             webGPURenderer.setSize(window.innerWidth, window.innerHeight);
             webGPURenderer.setPixelRatio(window.devicePixelRatio);
-            webGPURenderer.shadowMap.enabled = true;
+            // webGPURenderer.shadowMap.enabled = true;
 
             // Dispose of the default WebGLRenderer
             gl.dispose();
@@ -50,6 +53,7 @@ const HomePage = () => {
       >
         <Experience />
       </Canvas>
+      <TouchControls />
     </div>
   );
 };

@@ -4,8 +4,8 @@ import type { InputDevice, Player } from './types';
 import { CAMERA_MODES, INPUT_DEVICES } from './constants';
 
 export const playersAtom = atom<Player[]>([]);
-export const characterPositionAtom = atom(new Vector3(0, 0, 0));
-export const characterRotationAtom = atom(new Vector3(0, 0, 0));
+export const characterPositionAtom = atom(new Vector3(0, 5, 0));
+export const playerCharacterIdAtom = atom<string | null>('Tifa');
 
 // Available devices atom
 // export const availableDevicesAtom = atom<InputDevice[]>(getInitialDevices());
