@@ -1,53 +1,49 @@
-import { useEffect } from 'react';
 import { useAtom } from 'jotai';
-import { useGamepad } from '../hooks/useGamepad';
-import { availableDevicesAtom, selectedInputDeviceAtom } from '../store';
+import { selectedInputDeviceAtom } from '../store';
 import { INPUT_DEVICES } from '../constants';
 import type { InputDevice } from '../types';
 
-const InputDeviceSelector = () => {
-  const { activeGamepads, selectGamepad } = useGamepad();
-  const [availableDevices, setAvailableDevices] = useAtom(availableDevicesAtom);
+const devices: InputDevice[] = [
+  {
+    id: 'keyboard',
+    name: 'Keyboard & Mouse',
+    type: INPUT_DEVICES.KEYBOARD,
+    emoji: '⌨️',
+  },
+  {
+    id: 'gamepad-1',
+    name: 'Controller 1',
+    type: INPUT_DEVICES.GAMEPAD,
+    emoji: '🎮',
+  },
+  {
+    id: 'touch',
+    name: 'Touch Controls',
+    type: INPUT_DEVICES.TOUCH,
+    emoji: '👆',
+  },
+];
+
+const InputSelector = () => {
   const [selectedDevice, setSelectedDevice] = useAtom(selectedInputDeviceAtom);
 
-  // Update available devices when gamepads change
-  useEffect(() => {
-    const updatedDevices = availableDevices.filter(
-      (d) => d.type !== INPUT_DEVICES.GAMEPAD
-    );
-    activeGamepads.forEach((gamepad, index) => {
-      updatedDevices.push({
-        id: `gamepad-${index}`,
-        name: gamepad.id || `Controller ${index + 1}`,
-        type: INPUT_DEVICES.GAMEPAD,
-        emoji: '🎮',
-      });
-    });
-    setAvailableDevices(updatedDevices);
-  }, [activeGamepads]);
-
   const handleDeviceSelect = (device: InputDevice) => {
-    setSelectedDevice(device);
-    if (device.type === INPUT_DEVICES.GAMEPAD) {
-      const gamepadIndex = parseInt(device.id.split('-')[1]);
-      selectGamepad(gamepadIndex);
+    if (device.id !== selectedDevice.id) {
+      setSelectedDevice(device);
+      // Additional logic for gamepad selection can be added here if needed
     }
   };
 
   return (
-    <div className="absolute top-4 right-4 bg-black/80 backdrop-blur-sm rounded-lg p-4 text-white">
+    <div className="w-full sm:w-1/6 bg-black/80 backdrop-blur-sm rounded-lg p-4 text-white">
       <h2 className="text-lg font-bold mb-3">Input Device</h2>
       <div className="space-y-2">
-        {availableDevices.map((device) => (
+        {devices.map((device) => (
           <button
             key={device.id}
             onClick={() => handleDeviceSelect(device)}
             className={`w-full flex items-center justify-between p-2 rounded-md transition-colors
-              ${
-                selectedDevice.id === device.id
-                  ? 'bg-white/20 hover:bg-white/25'
-                  : 'hover:bg-white/10'
-              }`}
+              ${selectedDevice.id === device.id ? 'bg-white/20 hover:bg-white/25' : 'hover:bg-white/10'}`}
           >
             <div className="flex items-center space-x-3">
               <span className="text-xl">{device.emoji}</span>
@@ -63,4 +59,4 @@ const InputDeviceSelector = () => {
   );
 };
 
-export default InputDeviceSelector;
+export default InputSelector;

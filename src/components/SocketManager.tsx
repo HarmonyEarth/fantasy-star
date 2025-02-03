@@ -1,13 +1,14 @@
 import { useEffect } from 'react';
 import { useAtom } from 'jotai';
-import type { CharacterType } from '../types';
+import type { Player } from '../types';
 import { SOCKET_EVENTS } from '../constants';
-import { charactersAtom } from '../store';
+import { playersAtom } from '../store';
 
 export const SocketManager = () => {
-  const [, setCharacters] = useAtom(charactersAtom);
+  const [, setPlayers] = useAtom(playersAtom);
 
   useEffect(() => {
+    const controller = new AbortController();
     const socket = new WebSocket('ws://localhost:3001');
 
     const onConnect = () => {
@@ -22,9 +23,9 @@ export const SocketManager = () => {
       console.log('Hello client side');
     };
 
-    const onCharacters = (characters: CharacterType[]) => {
-      console.log('characters', characters);
-      setCharacters(characters);
+    const onPlayers = (players: Player[]) => {
+      console.log('characters', players);
+      setPlayers(players);
     };
 
     const handleMessage = (event: MessageEvent) => {
@@ -35,8 +36,8 @@ export const SocketManager = () => {
           case SOCKET_EVENTS.HELLO:
             onHello();
             break;
-          case SOCKET_EVENTS.CHARACTERS:
-            onCharacters(data);
+          case SOCKET_EVENTS.PLAYERS:
+            onPlayers(data);
             break;
           default:
             console.warn('Unhandled event:', eventType);
@@ -46,17 +47,19 @@ export const SocketManager = () => {
       }
     };
 
-    socket.addEventListener('open', onConnect);
-    socket.addEventListener('close', onDisconnect);
-    socket.addEventListener('message', handleMessage);
+    socket.addEventListener('open', onConnect, { signal: controller.signal });
+    socket.addEventListener('close', onDisconnect, {
+      signal: controller.signal,
+    });
+    socket.addEventListener('message', handleMessage, {
+      signal: controller.signal,
+    });
 
     return () => {
-      socket.removeEventListener('open', onConnect);
-      socket.removeEventListener('close', onDisconnect);
-      socket.removeEventListener('message', handleMessage);
+      controller.abort();
       socket.close();
     };
-  }, [setCharacters]);
+  }, [setPlayers]);
 
   return null;
 };

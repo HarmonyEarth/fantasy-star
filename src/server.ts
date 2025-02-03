@@ -1,15 +1,16 @@
+import { Vector3 } from 'three';
 import { SOCKET_EVENTS } from './constants';
-import type { CharacterType } from './types';
+import type { Player } from './types';
 
 interface WebSocketData {
   id: string;
 }
 
 const port = 3001;
-const characters: CharacterType[] = [];
+const players: Player[] = [];
 
-const generateRandomPosition = () => {
-  return [Math.random() * 3, 0, Math.random() * 3];
+const generateRandomPosition = (): Vector3 => {
+  return new Vector3(Math.random() * 3, 0, Math.random() * 3);
 };
 
 const generateRandomHexColor = () => {
@@ -30,12 +31,12 @@ const server = Bun.serve<WebSocketData>({
       ws.data = { id: crypto.randomUUID() };
       ws.subscribe('game-updates');
 
-      const character = {
+      const player = {
         id: ws.data.id,
         position: generateRandomPosition(),
       };
 
-      characters.push(character);
+      players.push(player);
 
       ws.send(
         JSON.stringify({
@@ -47,8 +48,8 @@ const server = Bun.serve<WebSocketData>({
       server.publish(
         'game-updates',
         JSON.stringify({
-          event: SOCKET_EVENTS.CHARACTERS,
-          data: characters,
+          event: SOCKET_EVENTS.PLAYERS,
+          data: players,
         })
       );
     },
@@ -58,15 +59,15 @@ const server = Bun.serve<WebSocketData>({
         const { event, data } = parsed;
 
         if (event === SOCKET_EVENTS.MOVE) {
-          const character = characters.find((c) => c.id === ws.data.id);
+          const player = players.find((c) => c.id === ws.data.id);
 
-          if (character) {
-            character.position = data;
+          if (player) {
+            player.position = data;
             server.publish(
               'game-updates',
               JSON.stringify({
-                event: SOCKET_EVENTS.CHARACTERS,
-                data: characters,
+                event: SOCKET_EVENTS.PLAYERS,
+                data: players,
               })
             );
           }
@@ -79,14 +80,14 @@ const server = Bun.serve<WebSocketData>({
       console.log('User Disconnected');
       ws.unsubscribe('game-updates');
 
-      const index = characters.findIndex((c) => c.id === ws.data.id);
+      const index = players.findIndex((c) => c.id === ws.data.id);
       if (index !== -1) {
-        characters.splice(index, 1);
+        players.splice(index, 1);
         server.publish(
           'game-updates',
           JSON.stringify({
-            event: SOCKET_EVENTS.CHARACTERS,
-            data: characters,
+            event: SOCKET_EVENTS.PLAYERS,
+            data: players,
           })
         );
       }

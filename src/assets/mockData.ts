@@ -4,7 +4,7 @@ import {
   LOCOMOTION,
   SOUND_CATEGORIES,
 } from '../constants';
-import type { CharacterType, CharacterAnimation, Sound } from '../types';
+import type { Character, CharacterAnimation, Sound } from '../types';
 
 const tifaId = 'Tifa';
 
@@ -72,14 +72,14 @@ const tifaAnimations: CharacterAnimation[] = [
 const tifaSounds: Sound[] = [
   {
     displayName: 'Tifa Voice Line #5',
-    fileName: 'audio/Tifa/p_dlc110_chatvoice_e#5.wav',
+    fileName: '',
     category: SOUND_CATEGORIES.VOICE_FX,
     characterId: tifaId,
     id: 'TifaVoiceLine5',
   },
 ];
 
-const Tifa: CharacterType = {
+const Tifa: Character = {
   id: tifaId,
   name: 'Tifa',
   fileName: 'models/Tifa/tifaBase.glb',
@@ -87,6 +87,7 @@ const Tifa: CharacterType = {
   size: 1,
   animations: tifaAnimations,
   sounds: tifaSounds,
+  icon: '🥊',
 };
 
 const cloudId = 'Cloud';
@@ -146,7 +147,7 @@ const cloudAnimations: CharacterAnimation[] = [
 
 const cloudSounds: Sound[] = [];
 
-const Cloud: CharacterType = {
+const Cloud: Character = {
   id: cloudId,
   name: 'Cloud',
   fileName: 'models/Cloud/cloudBase.glb',
@@ -154,6 +155,7 @@ const Cloud: CharacterType = {
   size: 1,
   animations: cloudAnimations,
   sounds: cloudSounds,
+  icon: '🗡️',
 };
 
 export const characters = [Tifa, Cloud];

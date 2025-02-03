@@ -1,59 +1,45 @@
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { useEffect, useState, useCallback } from 'react';
+import { GamepadState } from '../types';
 
-enum GAMEPAD_EVENTS {
-  CONNECTED = 'gamepadconnected',
-  DISCONNECTED = 'gamepaddisconnected',
-}
+const GAMEPAD_EVENTS = {
+  CONNECTED: 'gamepadconnected',
+  DISCONNECTED: 'gamepaddisconnected',
+};
 
-// Standard gamepad button mapping (based on Xbox/PS5 layout)
-export enum GAMEPAD_BUTTONS {
-  A = 0, // Cross on PS5
-  B = 1, // Circle on PS5
-  X = 2, // Square on PS5
-  Y = 3, // Triangle on PS5
-  LB = 4, // L1 on PS5
-  RB = 5, // R1 on PS5
-  LT = 6, // L2 on PS5
-  RT = 7, // R2 on PS5
-  Back = 8, // Share on PS5
-  Start = 9, // Options on PS5
-  LS = 10, // L3 on PS5
-  RS = 11, // R3 on PS5
-  DPadUp = 12,
-  DPadDown = 13,
-  DPadLeft = 14,
-  DPadRight = 15,
-}
-
-export interface GamepadState {
-  leftStick: { x: number; y: number };
-  rightStick: { x: number; y: number };
-  buttons: boolean[];
-  triggers: { left: number; right: number };
-}
-
-interface GamepadConfig {
-  deadzone?: number;
-}
+const GAMEPAD_BUTTONS = {
+  A: 0,
+  B: 1,
+  X: 2,
+  Y: 3,
+  LB: 4,
+  RB: 5,
+  LT: 6,
+  RT: 7,
+  Back: 8,
+  Start: 9,
+  LS: 10,
+  RS: 11,
+  DPadUp: 12,
+  DPadDown: 13,
+  DPadLeft: 14,
+  DPadRight: 15,
+};
 
 const DEFAULT_DEADZONE = 0.1;
 
-const getGamepads = async (): Promise<Gamepad[]> => {
-  return Object.values(navigator.getGamepads()).filter(Boolean) as Gamepad[];
-};
-
 const normalizeStickValue = (value: number, deadzone: number) => {
   if (Math.abs(value) < deadzone) return 0;
-
-  // Adjust the value to account for the deadzone and normalize to 0-1 range
   const normalized = (Math.abs(value) - deadzone) / (1 - deadzone);
   return value > 0 ? normalized : -normalized;
 };
 
-export const useGamepad = (config: GamepadConfig = {}) => {
-  const { deadzone = DEFAULT_DEADZONE } = config;
-  const [selectedGamepad, setSelectedGamepad] = useState<number>(0);
+const getGamepads = async () => {
+  return Object.values(navigator.getGamepads()).filter(Boolean) as Gamepad[];
+};
+
+export const useGamepad = ({ deadzone = DEFAULT_DEADZONE } = {}) => {
+  const [selectedGamepad, setSelectedGamepad] = useState(0);
   const [gamepadState, setGamepadState] = useState<GamepadState>({
     leftStick: { x: 0, y: 0 },
     rightStick: { x: 0, y: 0 },
@@ -63,105 +49,75 @@ export const useGamepad = (config: GamepadConfig = {}) => {
 
   const {
     data: gamepads,
-    isError,
     refetch,
+    isError,
   } = useQuery({
     queryKey: ['gamepads'],
     queryFn: getGamepads,
-    // refetchInterval: 16, // ~60fps
+    refetchInterval: 16,
   });
 
-  // // Handle gamepad connection/disconnection
-  // useEffect(() => {
-  //   const handleGamepadDisconnected = (e: GamepadEvent) => {
-  //     // Only need to handle selected gamepad being disconnected
-  //     if (
-  //       e.gamepad.index === selectedGamepad &&
-  //       gamepads &&
-  //       gamepads.length > 0
-  //     ) {
-  //       setSelectedGamepad(0); // Fall back to first gamepad if selected one is disconnected
-  //     }
-  //   };
+  const selectedGamepadRef = useRef(selectedGamepad); // useRef to avoid re-renders
 
-  //   window.addEventListener(
-  //     GAMEPAD_EVENTS.DISCONNECTED,
-  //     handleGamepadDisconnected
-  //   );
+  const handleGamepadConnected = useCallback(() => refetch(), [refetch]);
 
-  //   return () => {
-  //     window.removeEventListener(
-  //       GAMEPAD_EVENTS.DISCONNECTED,
-  //       handleGamepadDisconnected
-  //     );
-  //   };
-  // }, [gamepads, selectedGamepad]);
-
-  // Handle gamepad connection/disconnection
-  useEffect(() => {
-    const handleGamepadConnected = () => {
-      // Manually trigger refetch when a new gamepad connects
-      refetch();
-    };
-
-    const handleGamepadDisconnected = (e: GamepadEvent) => {
-      // Only need to handle selected gamepad being disconnected
+  const handleGamepadDisconnected = useCallback(
+    (e: GamepadEvent) => {
       if (
-        e.gamepad.index === selectedGamepad &&
-        gamepads &&
-        gamepads.length > 0
+        e.gamepad.index === selectedGamepadRef.current &&
+        (gamepads?.length ?? 0) > 0
       ) {
-        setSelectedGamepad(0); // Fall back to first gamepad if selected one is disconnected
+        setSelectedGamepad(0); // Fall back if the selected gamepad is disconnected
       }
-      refetch(); // Refresh gamepad list when one is disconnected
-    };
+      refetch(); // Refresh list on disconnect
+    },
+    [gamepads, refetch]
+  );
 
-    window.addEventListener(GAMEPAD_EVENTS.CONNECTED, handleGamepadConnected);
+  useEffect(() => {
+    selectedGamepadRef.current = selectedGamepad; // Keep track of the current selected gamepad in the ref
 
+    const controller = new AbortController();
+    window.addEventListener(GAMEPAD_EVENTS.CONNECTED, handleGamepadConnected, {
+      signal: controller.signal,
+    });
     window.addEventListener(
       GAMEPAD_EVENTS.DISCONNECTED,
-      handleGamepadDisconnected
+      handleGamepadDisconnected as EventListener,
+      { signal: controller.signal }
     );
 
     return () => {
-      window.removeEventListener(
-        GAMEPAD_EVENTS.CONNECTED,
-        handleGamepadConnected
-      );
-      window.removeEventListener(
-        GAMEPAD_EVENTS.DISCONNECTED,
-        handleGamepadDisconnected
-      );
+      controller.abort();
     };
-  }, [selectedGamepad, refetch]);
+  }, [handleGamepadConnected, handleGamepadDisconnected, selectedGamepad]);
 
-  // Update gamepad state
   useEffect(() => {
-    if (!gamepads || isError) return;
-
-    const gamepad = gamepads[selectedGamepad];
-    if (!gamepad) return;
-
-    setGamepadState({
-      leftStick: {
-        x: normalizeStickValue(gamepad.axes[0], deadzone),
-        y: normalizeStickValue(gamepad.axes[1], deadzone),
-      },
-      rightStick: {
-        x: normalizeStickValue(gamepad.axes[2], deadzone),
-        y: normalizeStickValue(gamepad.axes[3], deadzone),
-      },
-      buttons: gamepad.buttons.map((button) => button.pressed),
-      triggers: {
-        left: gamepad.buttons[GAMEPAD_BUTTONS.LT].value,
-        right: gamepad.buttons[GAMEPAD_BUTTONS.RT].value,
-      },
-    });
+    if (gamepads && !isError) {
+      const gamepad = gamepads[selectedGamepad];
+      if (gamepad) {
+        setGamepadState({
+          leftStick: {
+            x: normalizeStickValue(gamepad.axes[0], deadzone),
+            y: normalizeStickValue(gamepad.axes[1], deadzone),
+          },
+          rightStick: {
+            x: normalizeStickValue(gamepad.axes[2], deadzone),
+            y: normalizeStickValue(gamepad.axes[3], deadzone),
+          },
+          buttons: gamepad.buttons.map((button) => button.pressed),
+          triggers: {
+            left: gamepad.buttons[GAMEPAD_BUTTONS.LT]?.value || 0,
+            right: gamepad.buttons[GAMEPAD_BUTTONS.RT]?.value || 0,
+          },
+        });
+      }
+    }
   }, [gamepads, selectedGamepad, deadzone, isError]);
 
   const selectGamepad = useCallback(
     (index: number) => {
-      if (index >= 0 && index < (gamepads?.length || 0)) {
+      if (gamepads && index >= 0 && index < gamepads.length) {
         setSelectedGamepad(index);
       }
     },

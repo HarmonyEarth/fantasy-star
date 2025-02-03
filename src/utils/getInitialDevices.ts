@@ -42,21 +42,5 @@ export const getInitialDevices = (): InputDevice[] => {
     });
   }
 
-  // Gamepads are handled separately through the useGamepad hook
-  // but we check if the API is available
-  if (typeof navigator !== 'undefined' && !!navigator.getGamepads) {
-    const gamepads = Array.from(navigator.getGamepads()).filter(Boolean);
-    gamepads.forEach((gamepad, index) => {
-      if (gamepad) {
-        devices.push({
-          id: `gamepad-${index}`,
-          name: gamepad.id || `Controller ${index + 1}`,
-          type: INPUT_DEVICES.GAMEPAD,
-          emoji: '🎮',
-        });
-      }
-    });
-  }
-
   return devices;
 };

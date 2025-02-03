@@ -1,111 +1,143 @@
 import { useThree, useFrame } from '@react-three/fiber';
-import { useEffect, useMemo } from 'react';
-import { Object3D, Vector3 } from 'three';
+import { useEffect, useRef } from 'react';
+import { Object3D, Vector3, MathUtils } from 'three';
 import { useAtom } from 'jotai';
 import {
   characterPositionAtom,
-  characterRotationAtom,
   cameraModeAtom,
+  selectedInputDeviceAtom,
 } from '../store';
 import { useGamepad } from '../hooks/useGamepad';
-import { CAMERA_MODES } from '../constants';
+import { CAMERA_MODES, INPUT_DEVICES } from '../constants';
 
-const CAMERA_DISTANCE = 5;
+const CAMERA_DISTANCE = 4;
 const CAMERA_HEIGHT = 2;
-const ROTATION_SPEED = 0.1;
-const SMOOTHING = 0.1;
 const CAMERA_MIN_HEIGHT = 1;
+const POSITION_LERP_FACTOR = 0.1;
+const GAMEPAD_ROTATION_SPEED = 2;
+const MOUSE_ROTATION_SPEED = 0.002;
+const INPUT_RETURN_LERP_FACTOR = 0.05;
 
 const CameraController = () => {
-  const { scene, gl, camera } = useThree();
-
-  // Create hierarchical camera objects
-  const pivot = useMemo(() => new Object3D(), []); //Tracks the character’s world position. Smoothly follows the character
-  const alt = useMemo(() => new Object3D(), []); //Controls the vertical height of the camera
-  const yaw = useMemo(() => new Object3D(), []); //Handles horizontal rotation (left/right)
-  const pitch = useMemo(() => new Object3D(), []); //Handles vertical rotation (up/down)
-  const worldPosition = useMemo(() => new Vector3(), []);
-
-  // Atoms for character position and rotation
+  const { camera, scene, gl } = useThree();
+  const [selectedDevice] = useAtom(selectedInputDeviceAtom);
   const [characterPosition] = useAtom(characterPositionAtom);
-  const [characterRotation] = useAtom(characterRotationAtom);
   const [cameraMode] = useAtom(cameraModeAtom);
 
-  // Gamepad hook
+  const cameraRig = useRef<Object3D>(new Object3D());
+  const targetPosition = useRef<Vector3>(new Vector3());
+  const currentRotation = useRef<number>(0);
+  const lastInputRotation = useRef<number>(0);
+  const isRotating = useRef<boolean>(false);
+  const lastMouseX = useRef<number>(0);
+  const isUsingInput = useRef<boolean>(false);
+
+  // Persistent temporary vector to avoid allocations
+  const cameraOffset = useRef(new Vector3());
+
   const { gamepadState, isConnected } = useGamepad();
   const { rightStick } = gamepadState;
 
-  // Setup camera hierarchy
   useEffect(() => {
-    pivot.add(alt);
-    alt.position.y = CAMERA_HEIGHT;
-    alt.add(yaw);
-    yaw.add(pitch);
-    pitch.add(camera);
-    scene.add(pivot);
+    const controller = new AbortController();
+    scene.add(cameraRig.current);
 
-    const handleMouseMove = (event: MouseEvent) => {
-      if (cameraMode === CAMERA_MODES.GAME && event.buttons === 1) {
-        // Adjust yaw and pitch for orbiting
-        yaw.rotation.y -= event.movementX * ROTATION_SPEED * 0.01;
-        pitch.rotation.x -= event.movementY * ROTATION_SPEED * 0.01;
-
-        // Limit pitch rotation to prevent flipping
-        pitch.rotation.x = Math.max(
-          -Math.PI / 2, // Allow full upward view
-          Math.min(Math.PI / 2, pitch.rotation.x) // Allow full downward view
-        );
+    const handleMouseEvent = (e: MouseEvent, type: 'down' | 'up' | 'move') => {
+      if (type === 'down' && e.button === 0) {
+        isRotating.current = true;
+        lastMouseX.current = e.clientX;
+      }
+      if (type === 'up' && e.button === 0) {
+        isRotating.current = false;
+        if (selectedDevice.type === INPUT_DEVICES.KEYBOARD)
+          lastInputRotation.current = currentRotation.current;
+      }
+      if (type === 'move' && isRotating.current) {
+        const deltaX = e.movementX;
+        currentRotation.current -= deltaX * MOUSE_ROTATION_SPEED;
+        if (selectedDevice.type === INPUT_DEVICES.KEYBOARD) {
+          lastInputRotation.current = currentRotation.current;
+        }
       }
     };
 
-    gl.domElement.addEventListener('mousemove', handleMouseMove);
+    gl.domElement.addEventListener(
+      'mousedown',
+      (e) => handleMouseEvent(e, 'down'),
+      { signal: controller.signal }
+    );
+    gl.domElement.addEventListener(
+      'mouseup',
+      (e) => handleMouseEvent(e, 'up'),
+      { signal: controller.signal }
+    );
+    gl.domElement.addEventListener(
+      'mousemove',
+      (e) => handleMouseEvent(e, 'move'),
+      { signal: controller.signal }
+    );
+    gl.domElement.addEventListener('contextmenu', (e) => e.preventDefault(), {
+      signal: controller.signal,
+    });
 
     return () => {
-      gl.domElement.removeEventListener('mousemove', handleMouseMove);
+      controller.abort();
+      scene.remove(cameraRig.current);
     };
-  }, [camera, gl, scene, cameraMode]);
+  }, [scene, gl, selectedDevice]);
 
-  // Frame update
-  useFrame((_, delta) => {
-    // Update pivot position based on character world position
-    worldPosition.set(
-      characterPosition.x,
-      characterPosition.y,
-      characterPosition.z
+  useFrame((state, delta) => {
+    if (cameraMode !== CAMERA_MODES.GAME) return;
+
+    targetPosition.current.copy(characterPosition);
+    // Calculate dynamic follow speed: if distance > 1, increase follow rate.
+    const distance = cameraRig.current.position.distanceTo(
+      targetPosition.current
     );
-    pivot.position.lerp(worldPosition, delta * 5);
+    const followSpeed =
+      distance > 1
+        ? Math.min(1, POSITION_LERP_FACTOR + (distance - 1) * 0.5)
+        : POSITION_LERP_FACTOR;
+    cameraRig.current.position.lerp(targetPosition.current, followSpeed);
 
-    // Adjust camera rotation using the right stick
-    if (
-      isConnected &&
-      cameraMode === CAMERA_MODES.GAME &&
-      (Math.abs(rightStick.x) > 0.1 || Math.abs(rightStick.y) > 0.1)
-    ) {
-      yaw.rotation.y += rightStick.x * ROTATION_SPEED;
-      pitch.rotation.x = Math.max(
-        -Math.PI / 4,
-        Math.min(Math.PI / 4, pitch.rotation.x + rightStick.y * ROTATION_SPEED)
-      );
-    }
+    // Handle rotation input
+    const processRotation = () => {
+      if (selectedDevice.type === INPUT_DEVICES.GAMEPAD && isConnected) {
+        if (Math.abs(rightStick.x) > 0.1) {
+          isUsingInput.current = true;
+          currentRotation.current +=
+            rightStick.x * GAMEPAD_ROTATION_SPEED * delta;
+          lastInputRotation.current = currentRotation.current;
+        } else if (isUsingInput.current && !isRotating.current) {
+          currentRotation.current = MathUtils.lerp(
+            currentRotation.current,
+            lastInputRotation.current,
+            INPUT_RETURN_LERP_FACTOR
+          );
+        }
+      } else if (selectedDevice.type === INPUT_DEVICES.KEYBOARD) {
+        if (!isRotating.current && isUsingInput.current) {
+          currentRotation.current = MathUtils.lerp(
+            currentRotation.current,
+            lastInputRotation.current,
+            INPUT_RETURN_LERP_FACTOR
+          );
+        }
+        isUsingInput.current = isRotating.current;
+      }
+    };
 
-    // Follow character’s rotation when not manually controlled
-    if (cameraMode === CAMERA_MODES.GAME && !isConnected) {
-      yaw.rotation.y = characterRotation.y;
-    }
+    processRotation();
 
-    // Calculate the camera offset
-    const offset = new Vector3(
-      Math.sin(yaw.rotation.y) * CAMERA_DISTANCE,
+    // Update the persistent cameraOffset vector instead of creating a new one
+    cameraOffset.current.set(
+      -Math.sin(currentRotation.current) * CAMERA_DISTANCE,
       CAMERA_HEIGHT,
-      Math.cos(yaw.rotation.y) * CAMERA_DISTANCE
+      -Math.cos(currentRotation.current) * CAMERA_DISTANCE
     );
-
-    // Smoothly move camera towards the target position
-    camera.position.lerp(worldPosition.clone().sub(offset), SMOOTHING);
+    camera.position.copy(cameraRig.current.position).add(cameraOffset.current);
     camera.position.y = Math.max(camera.position.y, CAMERA_MIN_HEIGHT);
-
-    // Make the camera look at the character
-    camera.lookAt(worldPosition);
+    camera.lookAt(cameraRig.current.position);
   });
 
   return null;

@@ -40,6 +40,7 @@ export enum SOCKET_EVENTS {
   CONNECT = 'connect',
   DISCONNECT = 'disconnect',
   HELLO = 'hello',
+  PLAYERS = 'players',
   CHARACTERS = 'characters',
   MOVE = 'move',
 }
