@@ -15,7 +15,7 @@ const Field = () => {
           <meshStandardMaterial map={checkerboardTexture} />
         </mesh>
       </RigidBody>
-      <primitive object={new AxesHelper(10)} position={[0, 0.5, 0]} />
+      {/* <primitive object={new AxesHelper(10)} position={[0, 0.5, 0]} /> */}
       <Grid
         position={[0, 0.01, 0]}
         args={[100, 100]}

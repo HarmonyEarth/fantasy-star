@@ -10,7 +10,7 @@ import {
 import { useGamepad } from '../hooks/useGamepad';
 import { CAMERA_MODES, INPUT_DEVICES } from '../constants';
 
-const CAMERA_DISTANCE = 5;
+const CAMERA_DISTANCE = 4;
 const CAMERA_HEIGHT = 2;
 const CAMERA_MIN_HEIGHT = 1;
 const POSITION_LERP_FACTOR = 0.1;
