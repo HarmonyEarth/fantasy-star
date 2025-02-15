@@ -17,32 +17,6 @@ Play the game here: [Fantasy Star](https://fantasy-star.vercel.app/)
 - **Styling**: Utilizes Tailwind CSS.
 - **Build Tooling**: Powered by Vite.
 
-## Getting Started
-
-1. **Clone the repository**:
-
-   ```sh
-   git clone https://github.com/HarmonyEarth/fantasy-star.git
-   cd fantasy-star
-   ```
-
-2. **Add dependencies**:
-
-   ```sh
-   bun add
-   ```
-
-3. **Start the development server**:
-
-   ```sh
-   bun start:dev
-   ```
-
-4. **Tauri development**:
-   ```sh
-   bun tauri dev
-   ```
-
 ## Contributing
 
 Contributions are welcome! Open an issue or submit a pull request.
