@@ -1,5 +1,7 @@
 import { Canvas } from '@react-three/fiber';
 import { useGLTF } from '@react-three/drei';
+import { useState } from 'react';
+import { useAtom } from 'jotai';
 import Experience from '../components/Experience';
 import { SocketManager } from '../components/SocketManager';
 import type { Character } from '../types';
@@ -7,7 +9,7 @@ import { characters } from '../assets/mockData';
 import InputSelector from '../components/InputSelector';
 import TouchControls from '../components/TouchControls';
 import CharacterSelect from '../components/CharacterSelect';
-import { useState } from 'react';
+import { gameDebugAtom } from '../store';
 
 const HomePage = () => {
   // useEffect(() => {
@@ -26,10 +28,12 @@ const HomePage = () => {
         <CharacterSelect />
         <div className="w-full sm:w-1/6 bg-black/80 backdrop-blur-sm rounded-lg p-4 text-white">
           <FullscreenToggle />
+          <DebugToggle />
         </div>
       </div>
       <Canvas
         fallback={<div>Sorry no WebGL supported!</div>}
+
         // onCreated={({ gl }) => {
         //   if (navigator.gpu) {
         //     console.log(
@@ -84,6 +88,24 @@ const FullscreenToggle = () => {
     >
       {!isFullscreen && <span>Enable Fullscreen ✅</span>}
       {isFullscreen && <span>Disable Fullscreen ❌</span>}
+    </button>
+  );
+};
+
+const DebugToggle = () => {
+  const [gameDebug, setGameDebug] = useAtom(gameDebugAtom);
+
+  const handleToggle = () => {
+    setGameDebug((prev) => !prev);
+  };
+
+  return (
+    <button
+      onClick={handleToggle}
+      className=" flex items-center justify-between p-2 rounded-md transition-colors hover:bg-white/10 text-white"
+    >
+      {!gameDebug && <span>Enable Debug ✅</span>}
+      {gameDebug && <span>Disable Debug ❌</span>}
     </button>
   );
 };

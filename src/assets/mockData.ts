@@ -82,7 +82,7 @@ const tifaSounds: Sound[] = [
 const Tifa: Character = {
   id: tifaId,
   name: 'Tifa',
-  fileName: 'models/Tifa/tifaBase.glb',
+  fileName: import.meta.env.VITE_TIFA_MODEL as string,
   life: 100,
   size: 1,
   animations: tifaAnimations,
@@ -150,7 +150,7 @@ const cloudSounds: Sound[] = [];
 const Cloud: Character = {
   id: cloudId,
   name: 'Cloud',
-  fileName: 'models/Cloud/cloudBase.glb',
+  fileName: import.meta.env.VITE_CLOUD_MODEL as string,
   life: 100,
   size: 1,
   animations: cloudAnimations,

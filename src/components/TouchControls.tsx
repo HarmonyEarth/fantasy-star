@@ -10,10 +10,12 @@ const TouchControls = () => {
 
   return (
     <div className="fixed bottom-40 left-40 z-10">
-      <TouchJoystick
-        direction={touchState.direction}
-        active={touchState.active}
-      />
+      {selectedDevice.type === INPUT_DEVICES.TOUCH && (
+        <TouchJoystick
+          direction={touchState.direction}
+          active={touchState.active}
+        />
+      )}
     </div>
   );
 };
