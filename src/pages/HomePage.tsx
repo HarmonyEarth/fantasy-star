@@ -9,19 +9,57 @@ import { characters } from '../assets/mockData';
 import InputSelector from '../components/InputSelector';
 import TouchControls from '../components/TouchControls';
 import CharacterSelect from '../components/CharacterSelect';
-import { gameDebugAtom } from '../store';
+import { gameDebugAtom, uiVisibleAtom } from '../store';
 
 const HomePage = () => {
+  const [uiVisible] = useAtom(uiVisibleAtom);
+
   return (
     <div id="fullscreen-container" className="w-full h-screen relative">
       <SocketManager />
       <Canvas
         className="w-full h-full absolute top-0 left-0"
         fallback={<div>Sorry no WebGL supported!</div>}
+        // onCreated={({ gl }) => {
+        //   if (navigator.gpu) {
+        //     console.log(
+        //       'Using WebGPURenderer',
+        //       navigator.gpu instanceof GPU ? 'with GPU' : 'without GPU'
+        //     );
+        //     const canvas = gl.domElement;
+        //     const webGPURenderer = new WebGPURenderer({ canvas });
+        //     webGPURenderer.setSize(window.innerWidth, window.innerHeight);
+        //     webGPURenderer.setPixelRatio(window.devicePixelRatio);
+        //     // webGPURenderer.shadowMap.enabled = true;
+
+        //     // Dispose of the default WebGLRenderer
+        //     gl.dispose();
+
+        //     // Replace with WebGPURenderer
+        //     return webGPURenderer;
+        //   } else {
+        //     console.warn(
+        //       'WebGPU not supported. Falling back to WebGLRenderer.'
+        //     );
+        //   }
+        // }}
       >
         <Experience />
       </Canvas>
-      <div className="absolute top-4 left-4 right-4 flex flex-col sm:flex-row justify-between items-start gap-4 pointer-events-none">
+
+      {/* UI Visibility Toggle - Always visible on mobile */}
+      <div className="sm:hidden absolute top-4 left-4 right-4 pointer-events-none">
+        <div className="w-full bg-black/50 backdrop-blur-sm rounded-lg p-4 text-white pointer-events-auto">
+          <UIVisibilityToggle />
+        </div>
+      </div>
+
+      {/* Main Controls - Toggleable visibility on mobile */}
+      <div
+        className={`absolute top-20 sm:top-4 left-4 right-4 flex flex-col sm:flex-row justify-between items-start gap-4 pointer-events-none ${
+          !uiVisible ? 'sm:flex hidden' : 'flex'
+        }`}
+      >
         <InputSelector />
         <CharacterSelect />
         <div className="w-full sm:w-52 bg-black/50 backdrop-blur-sm rounded-lg p-4 text-white pointer-events-auto">
@@ -55,8 +93,11 @@ const FullscreenToggle = () => {
       onClick={handleToggle}
       className=" flex items-center justify-between p-2 rounded-md transition-colors hover:bg-white/10 text-white"
     >
-      {!isFullscreen && <span>Enable Fullscreen ✅</span>}
-      {isFullscreen && <span>Disable Fullscreen ❌</span>}
+      {isFullscreen ? (
+        <span>Disable Fullscreen ❌</span>
+      ) : (
+        <span>Enable Fullscreen ✅</span>
+      )}
     </button>
   );
 };
@@ -73,8 +114,20 @@ const DebugToggle = () => {
       onClick={handleToggle}
       className=" flex items-center justify-between p-2 rounded-md transition-colors hover:bg-white/10 text-white"
     >
-      {!gameDebug && <span>Enable Debug ✅</span>}
-      {gameDebug && <span>Disable Debug ❌</span>}
+      {gameDebug ? <span>Disable Debug ❌</span> : <span>Enable Debug ✅</span>}
+    </button>
+  );
+};
+
+const UIVisibilityToggle = () => {
+  const [uiVisible, setUiVisible] = useAtom(uiVisibleAtom);
+
+  return (
+    <button
+      onClick={() => setUiVisible((prev) => !prev)}
+      className="flex items-center justify-between w-full p-2 rounded-md transition-colors hover:bg-white/10 text-white"
+    >
+      <span>{uiVisible ? 'Hide UI ❌' : 'Show UI ✅'}</span>
     </button>
   );
 };
