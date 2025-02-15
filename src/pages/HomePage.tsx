@@ -20,6 +20,29 @@ const HomePage = () => {
       <Canvas
         className="w-full h-full absolute top-0 left-0"
         fallback={<div>Sorry no WebGL supported!</div>}
+        // onCreated={({ gl }) => {
+        //   if (navigator.gpu) {
+        //     console.log(
+        //       'Using WebGPURenderer',
+        //       navigator.gpu instanceof GPU ? 'with GPU' : 'without GPU'
+        //     );
+        //     const canvas = gl.domElement;
+        //     const webGPURenderer = new WebGPURenderer({ canvas });
+        //     webGPURenderer.setSize(window.innerWidth, window.innerHeight);
+        //     webGPURenderer.setPixelRatio(window.devicePixelRatio);
+        //     // webGPURenderer.shadowMap.enabled = true;
+
+        //     // Dispose of the default WebGLRenderer
+        //     gl.dispose();
+
+        //     // Replace with WebGPURenderer
+        //     return webGPURenderer;
+        //   } else {
+        //     console.warn(
+        //       'WebGPU not supported. Falling back to WebGLRenderer.'
+        //     );
+        //   }
+        // }}
       >
         <Experience />
       </Canvas>
