@@ -11,7 +11,10 @@ const TouchControls = () => {
   if (selectedDevice.type !== INPUT_DEVICES.TOUCH) return null;
 
   return (
-    <div className="fixed bottom-40 left-40" style={{ zIndex: 10 }}>
+    <div
+      className="fixed bottom-40 left-40 pointer-events-auto"
+      style={{ zIndex: 40 }}
+    >
       <TouchJoystick
         direction={touchState.direction}
         active={touchState.active}

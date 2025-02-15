@@ -59,8 +59,22 @@ export function useTouch(selectedDeviceIsTouch: boolean) {
     if (!selectedDeviceIsTouch) return;
 
     const handleTouchStart = (e: TouchEvent) => {
-      e.preventDefault();
-      handleStart(e.touches[0].clientX, e.touches[0].clientY);
+      // Only handle touch events near the joystick area
+      const touchX = e.touches[0].clientX;
+      const touchY = e.touches[0].clientY;
+      const joystickX = touchState.position.x;
+      const joystickY = touchState.position.y;
+
+      // Calculate distance from joystick center
+      const dx = touchX - joystickX;
+      const dy = touchY - joystickY;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+
+      // Only prevent default if touching near joystick (within 100px radius)
+      if (distance < 100) {
+        e.preventDefault();
+        handleStart(touchX, touchY);
+      }
     };
 
     const handleTouchMove = (e: TouchEvent) => {
