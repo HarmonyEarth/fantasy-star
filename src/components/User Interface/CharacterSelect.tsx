@@ -1,7 +1,7 @@
 import React from 'react';
 import { useAtom } from 'jotai';
-import { playerCharacterIdAtom } from '../store';
-import { characters } from '../assets/mockData';
+import { playerCharacterIdAtom } from '../../store';
+import { characters } from '../../assets/mockData';
 
 const CharacterSelect = () => {
   const [playerCharacterId, setPlayerCharacterId] = useAtom(

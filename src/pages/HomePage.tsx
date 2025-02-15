@@ -1,18 +1,20 @@
 import { Canvas } from '@react-three/fiber';
 import { useGLTF } from '@react-three/drei';
-import { useState } from 'react';
 import { useAtom } from 'jotai';
-import Experience from '../components/Experience';
-import { SocketManager } from '../components/SocketManager';
+import { showUIAtom } from '../store';
 import type { Character } from '../types';
 import { characters } from '../assets/mockData';
-import InputSelector from '../components/InputSelector';
-import TouchControls from '../components/TouchControls';
-import CharacterSelect from '../components/CharacterSelect';
-import { gameDebugAtom, uiVisibleAtom } from '../store';
+import Experience from '../components/Experience';
+import InputSelector from '../components/User Interface/InputSelector';
+import TouchControls from '../components/Touch/TouchControls';
+import CharacterSelect from '../components/User Interface/CharacterSelect';
+import DebugToggle from '../components/User Interface/DebugToggle';
+import ShowUIToggle from '../components/User Interface/ShowUIToggle';
+import FullScreenToggle from '../components/User Interface/FullScreenToggle';
+import { SocketManager } from '../components/Networking/SocketManager';
 
 const HomePage = () => {
-  const [uiVisible] = useAtom(uiVisibleAtom);
+  const [showUI] = useAtom(showUIAtom);
 
   return (
     <div id="fullscreen-container" className="w-full h-screen relative">
@@ -20,7 +22,7 @@ const HomePage = () => {
       <Canvas
         className="w-full h-full absolute top-0 left-0"
         fallback={<div>Sorry no WebGL supported!</div>}
-          // onCreated={({ gl }) => {
+        // onCreated={({ gl }) => {
         //   if (navigator.gpu) {
         //     console.log(
         //       'Using WebGPURenderer',
@@ -48,23 +50,23 @@ const HomePage = () => {
       </Canvas>
       <TouchControls />
 
-      {/* UI Visibility Toggle - Always visible on mobile */}
-      <div className="sm:hidden absolute top-4 left-4 right-4 pointer-events-none z-50">
-        <div className="w-full bg-black/50 backdrop-blur-sm rounded-lg p-4 text-white pointer-events-auto">
-          <UIVisibilityToggle />
+      {/* UI Visibility Toggle - Always visible */}
+      <div className="absolute top-4 left-4 right-4 pointer-events-none z-50">
+        <div className="w-full sm:w-52 bg-black/50 backdrop-blur-sm rounded-lg p-4 text-white pointer-events-auto">
+          <ShowUIToggle />
         </div>
       </div>
 
       {/* Main Controls - Toggleable visibility on mobile */}
       <div
-        className={`absolute top-20 sm:top-4 left-4 right-4 flex flex-col sm:flex-row justify-between items-start gap-4 pointer-events-none z-50 ${
-          !uiVisible ? 'sm:flex hidden' : 'flex'
+        className={`absolute top-20 sm:top-20 left-4 right-4 flex flex-col sm:flex-row justify-between items-start gap-4 pointer-events-none z-50 ${
+          showUI ? 'flex' : 'hidden'
         }`}
       >
         <InputSelector />
         <CharacterSelect />
         <div className="w-full sm:w-52 bg-black/50 backdrop-blur-sm rounded-lg p-4 text-white pointer-events-auto">
-          <FullscreenToggle />
+          <FullScreenToggle />
           <DebugToggle />
         </div>
       </div>
@@ -73,64 +75,6 @@ const HomePage = () => {
 };
 
 export default HomePage;
-
-const FullscreenToggle = () => {
-  const [isFullscreen, setIsFullscreen] = useState(false);
-
-  const handleToggle = () => {
-    const elem = document.getElementById('fullscreen-container');
-    if (elem && !document.fullscreenElement) {
-      elem.requestFullscreen?.();
-      setIsFullscreen(true);
-    } else if (document.fullscreenElement) {
-      document.exitFullscreen?.();
-      setIsFullscreen(false);
-    }
-  };
-
-  return (
-    <button
-      onClick={handleToggle}
-      className=" flex items-center justify-between p-2 rounded-md transition-colors hover:bg-white/10 text-white"
-    >
-      {isFullscreen ? (
-        <span>Disable Fullscreen ❌</span>
-      ) : (
-        <span>Enable Fullscreen ✅</span>
-      )}
-    </button>
-  );
-};
-
-const DebugToggle = () => {
-  const [gameDebug, setGameDebug] = useAtom(gameDebugAtom);
-
-  const handleToggle = () => {
-    setGameDebug((prev) => !prev);
-  };
-
-  return (
-    <button
-      onClick={handleToggle}
-      className=" flex items-center justify-between p-2 rounded-md transition-colors hover:bg-white/10 text-white"
-    >
-      {gameDebug ? <span>Disable Debug ❌</span> : <span>Enable Debug ✅</span>}
-    </button>
-  );
-};
-
-const UIVisibilityToggle = () => {
-  const [uiVisible, setUiVisible] = useAtom(uiVisibleAtom);
-
-  return (
-    <button
-      onClick={() => setUiVisible((prev) => !prev)}
-      className="flex items-center justify-between w-full p-2 rounded-md transition-colors hover:bg-white/10 text-white"
-    >
-      <span>{uiVisible ? 'Hide UI ❌' : 'Show UI ✅'}</span>
-    </button>
-  );
-};
 
 const preloadCharacterAssets = (characters: Character[]) => {
   characters.forEach((character) => {

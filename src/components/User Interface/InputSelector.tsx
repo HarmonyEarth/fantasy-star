@@ -1,12 +1,12 @@
 import { useAtom } from 'jotai';
-import { selectedInputDeviceAtom } from '../store';
-import { INPUT_DEVICES } from '../constants';
-import type { InputDevice } from '../types';
+import { selectedInputDeviceAtom, showUIAtom } from '../../store';
+import { INPUT_DEVICES } from '../../constants';
+import type { InputDevice } from '../../types';
 
 const devices: InputDevice[] = [
   {
     id: 'keyboard',
-    name: 'Keyboard & Mouse',
+    name: 'Keyboard',
     type: INPUT_DEVICES.KEYBOARD,
     emoji: '⌨️',
   },
@@ -26,16 +26,20 @@ const devices: InputDevice[] = [
 
 const InputSelector = () => {
   const [selectedDevice, setSelectedDevice] = useAtom(selectedInputDeviceAtom);
+  const [, setShowUI] = useAtom(showUIAtom);
 
   const handleDeviceSelect = (device: InputDevice) => {
     if (device.id !== selectedDevice.id) {
       setSelectedDevice(device);
-      // Additional logic for gamepad selection can be added here if needed
+      // Automatically hide UI when selecting touch controls
+      if (device.type === INPUT_DEVICES.TOUCH) {
+        setShowUI(false);
+      }
     }
   };
 
   return (
-    <div className="w-full sm:w-48 bg-black/50 backdrop-blur-sm rounded-lg p-4 text-white pointer-events-auto">
+    <div className="w-full sm:w-52 bg-black/50 backdrop-blur-sm rounded-lg p-4 text-white pointer-events-auto">
       <h2 className="text-lg font-bold mb-3">Input Device</h2>
       <div className="space-y-2">
         {devices.map((device) => (

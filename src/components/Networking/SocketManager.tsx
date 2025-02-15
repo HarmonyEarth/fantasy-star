@@ -1,10 +1,10 @@
 import { useEffect } from 'react';
 import { useAtom } from 'jotai';
-import type { Player } from '../types';
-import { SOCKET_EVENTS } from '../constants';
-import { playersAtom } from '../store';
+import { playersAtom } from '../../store';
+import type { Player } from '../../types';
+import { SOCKET_EVENTS } from '../../constants';
 
-export const SocketManager = () => {
+const SocketManager = () => {
   const [, setPlayers] = useAtom(playersAtom);
 
   useEffect(() => {
@@ -63,3 +63,5 @@ export const SocketManager = () => {
 
   return null;
 };
+
+export default SocketManager;

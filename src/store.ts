@@ -25,4 +25,4 @@ export const cameraModeAtom = atom(CAMERA_MODES.GAME);
 
 export const gameDebugAtom = atom(false);
 
-export const uiVisibleAtom = atom(true);
+export const showUIAtom = atom(true);

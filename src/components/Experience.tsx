@@ -3,8 +3,8 @@ import { Physics } from '@react-three/rapier';
 import { Perf } from 'r3f-perf';
 import CharacterController from './CharacterController';
 import CameraController from './CameraController';
-import Field from './Field';
-import PropObjects from './PropObjects';
+import Field from './Maps/Field';
+import PropObjects from './Maps/PropObjects';
 import { useAtom } from 'jotai';
 import { gameDebugAtom } from '../store';
 

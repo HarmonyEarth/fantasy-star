@@ -1,8 +1,8 @@
 import { useAtom } from 'jotai';
-import { selectedInputDeviceAtom } from '../store';
-import { INPUT_DEVICES } from '../constants';
+import { selectedInputDeviceAtom } from '../../store';
+import { INPUT_DEVICES } from '../../constants';
 import TouchJoystick from './TouchJoystick';
-import { useTouch } from '../hooks/useTouch';
+import { useTouch } from '../../hooks/useTouch';
 
 const TouchControls = () => {
   const [selectedDevice] = useAtom(selectedInputDeviceAtom);
