@@ -2,6 +2,8 @@
 
 Fantasy Star is a 3D multiplayer game engine designed for browser, mobile (Android), and desktop (Mac, Windows, Linux). It leverages modern web technologies to deliver a seamless and high-performance gaming experience.
 
+Play the game here: [Fantasy Star](https://fantasy-star.vercel.app/)
+
 ## Features
 
 - **3D Rendering**: Built with React Three Fiber & Drei for advanced 3D graphics.
