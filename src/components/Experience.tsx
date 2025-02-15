@@ -5,6 +5,8 @@ import CharacterController from './CharacterController';
 import CameraController from './CameraController';
 import Field from './Field';
 import PropObjects from './PropObjects';
+import { useAtom } from 'jotai';
+import { gameDebugAtom } from '../store';
 
 const keyboardMap = [
   { name: 'forward', keys: ['ArrowUp', 'KeyW'] },
@@ -15,15 +17,16 @@ const keyboardMap = [
 ];
 
 const Experience = () => {
+  const [gameDebug] = useAtom(gameDebugAtom);
   return (
     <>
-      <Perf minimal />
-      <Stats />
+      {gameDebug && <Perf minimal />}
+      {gameDebug && <Stats />}
       <ambientLight intensity={1} />
       <directionalLight intensity={5} position={[15, 100, 150]} />
       <Sky azimuth={2} sunPosition={[0, 0, 30]} />
       <KeyboardControls map={keyboardMap}>
-        <Physics>
+        <Physics debug={gameDebug}>
           <Field />
           <PropObjects />
           <CharacterController />

@@ -80,24 +80,31 @@ export function useTouch(selectedDeviceIsTouch: boolean) {
     const handleTouchEnd = () => handleEnd();
 
     const element = document.getElementById('root');
+    const controller = new AbortController();
+
     if (element) {
-      element.addEventListener('touchstart', handleTouchStart);
-      element.addEventListener('touchmove', handleTouchMove);
-      element.addEventListener('touchend', handleTouchEnd);
-      element.addEventListener('mousedown', handleMouseDown);
-      element.addEventListener('mousemove', handleMouseMove);
-      element.addEventListener('mouseup', handleMouseUp);
+      element.addEventListener('touchstart', handleTouchStart, {
+        signal: controller.signal,
+      });
+      element.addEventListener('touchmove', handleTouchMove, {
+        signal: controller.signal,
+      });
+      element.addEventListener('touchend', handleTouchEnd, {
+        signal: controller.signal,
+      });
+      element.addEventListener('mousedown', handleMouseDown, {
+        signal: controller.signal,
+      });
+      element.addEventListener('mousemove', handleMouseMove, {
+        signal: controller.signal,
+      });
+      element.addEventListener('mouseup', handleMouseUp, {
+        signal: controller.signal,
+      });
     }
 
     return () => {
-      if (element) {
-        element.removeEventListener('touchstart', handleTouchStart);
-        element.removeEventListener('touchmove', handleTouchMove);
-        element.removeEventListener('touchend', handleTouchEnd);
-        element.removeEventListener('mousedown', handleMouseDown);
-        element.removeEventListener('mousemove', handleMouseMove);
-        element.removeEventListener('mouseup', handleMouseUp);
-      }
+      controller.abort();
     };
   }, [
     selectedDeviceIsTouch,

@@ -29,6 +29,7 @@
     "@tanstack/eslint-plugin-query": "^5.62.1",
     "@tanstack/router-devtools": "^1.91.2",
     "@tanstack/router-plugin": "^1.91.1",
+    "@tauri-apps/cli": "^2.2.7",
     "@types/bun": "^1.1.14",
     "@types/react": "^19.0.2",
     "@types/react-dom": "^19.0.2",

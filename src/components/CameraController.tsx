@@ -21,6 +21,7 @@ const INPUT_RETURN_LERP_FACTOR = 0.05;
 const CameraController = () => {
   const { camera, scene, gl } = useThree();
   const [selectedDevice] = useAtom(selectedInputDeviceAtom);
+  // Use the persistent physics-driven characterPosition
   const [characterPosition] = useAtom(characterPositionAtom);
   const [cameraMode] = useAtom(cameraModeAtom);
 
@@ -89,6 +90,7 @@ const CameraController = () => {
   useFrame((state, delta) => {
     if (cameraMode !== CAMERA_MODES.GAME) return;
 
+    // Use the persistent physics-driven characterPosition directly
     targetPosition.current.copy(characterPosition);
     // Calculate dynamic follow speed: if distance > 1, increase follow rate.
     const distance = cameraRig.current.position.distanceTo(

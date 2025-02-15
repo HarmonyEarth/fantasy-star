@@ -12,6 +12,7 @@ import { useGamepad } from '../hooks/useGamepad';
 import { useTouch } from '../hooks/useTouch';
 import {
   characterPositionAtom,
+  gameDebugAtom,
   playerCharacterIdAtom,
   selectedInputDeviceAtom,
 } from '../store';
@@ -30,9 +31,9 @@ interface Props {
 
 const CharacterController: React.FC<Props> = () => {
   const [playerCharacterId] = useAtom(playerCharacterIdAtom);
-  const [characterPosition, setCharacterPosition] = useAtom(
-    characterPositionAtom
-  );
+  // Get the persistent characterPosition vector (do not use its setter)
+  const [characterPosition] = useAtom(characterPositionAtom);
+  const [gameDebug] = useAtom(gameDebugAtom);
   const [selectedDevice] = useAtom(selectedInputDeviceAtom);
   const [animationState, setAnimationState] = useState(ANIMATION_STATES.IDLE);
   const [locomotionState, setLocomotionState] = useState<
@@ -133,16 +134,16 @@ const CharacterController: React.FC<Props> = () => {
       rigidBodyRef.current.applyImpulse(impulse, true);
     }
 
-    // Update arrow helper
+    // Update arrow helper if debugging
     if (arrowHelperRef.current) {
       arrowHelperRef.current.setDirection(new Vector3(0, 0, 1));
       arrowHelperRef.current.position.copy(characterRef.current.position);
       arrowHelperRef.current.rotation.y = currentRotation.current;
     }
 
-    // Re-add update: sync characterPosition atom with physics simulation
+    // Instead of creating a new Vector3, update the persistent characterPosition in place
     const { x, y, z } = rigidBodyRef.current.translation();
-    setCharacterPosition(new Vector3(x, y, z));
+    characterPosition.set(x, y, z);
   });
 
   return (
@@ -170,10 +171,12 @@ const CharacterController: React.FC<Props> = () => {
               locomotionState={locomotionState}
             />
           </Suspense>
-          {/* <arrowHelper
-            ref={arrowHelperRef}
-            args={[new Vector3(0, 0, 1), new Vector3(0, 1, 0), 2, 0x0000ff]}
-          /> */}
+          {gameDebug && (
+            <arrowHelper
+              ref={arrowHelperRef}
+              args={[new Vector3(0, 0, 1), new Vector3(0, 1, 0), 2, 0x0000ff]}
+            />
+          )}
           <CapsuleCollider args={[0.6, 0.4]} />
         </group>
       </RigidBody>

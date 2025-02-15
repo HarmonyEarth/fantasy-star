@@ -4,7 +4,10 @@ import type { InputDevice, Player } from './types';
 import { CAMERA_MODES, INPUT_DEVICES } from './constants';
 
 export const playersAtom = atom<Player[]>([]);
+// This is for initial spawn position only
 export const characterPositionAtom = atom(new Vector3(0, 5, 0));
+// This is for runtime physics-based position
+export const physicsPositionAtom = atom(new Vector3(0, 5, 0));
 export const playerCharacterIdAtom = atom<string | null>('Tifa');
 
 // Available devices atom
@@ -19,3 +22,5 @@ export const selectedInputDeviceAtom = atom<InputDevice>({
 });
 
 export const cameraModeAtom = atom(CAMERA_MODES.GAME);
+
+export const gameDebugAtom = atom(false);
