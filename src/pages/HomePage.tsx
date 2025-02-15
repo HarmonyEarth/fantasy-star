@@ -20,35 +20,13 @@ const HomePage = () => {
       <Canvas
         className="w-full h-full absolute top-0 left-0"
         fallback={<div>Sorry no WebGL supported!</div>}
-        // onCreated={({ gl }) => {
-        //   if (navigator.gpu) {
-        //     console.log(
-        //       'Using WebGPURenderer',
-        //       navigator.gpu instanceof GPU ? 'with GPU' : 'without GPU'
-        //     );
-        //     const canvas = gl.domElement;
-        //     const webGPURenderer = new WebGPURenderer({ canvas });
-        //     webGPURenderer.setSize(window.innerWidth, window.innerHeight);
-        //     webGPURenderer.setPixelRatio(window.devicePixelRatio);
-        //     // webGPURenderer.shadowMap.enabled = true;
-
-        //     // Dispose of the default WebGLRenderer
-        //     gl.dispose();
-
-        //     // Replace with WebGPURenderer
-        //     return webGPURenderer;
-        //   } else {
-        //     console.warn(
-        //       'WebGPU not supported. Falling back to WebGLRenderer.'
-        //     );
-        //   }
-        // }}
       >
         <Experience />
       </Canvas>
+      <TouchControls />
 
       {/* UI Visibility Toggle - Always visible on mobile */}
-      <div className="sm:hidden absolute top-4 left-4 right-4 pointer-events-none">
+      <div className="sm:hidden absolute top-4 left-4 right-4 pointer-events-none z-50">
         <div className="w-full bg-black/50 backdrop-blur-sm rounded-lg p-4 text-white pointer-events-auto">
           <UIVisibilityToggle />
         </div>
@@ -56,7 +34,7 @@ const HomePage = () => {
 
       {/* Main Controls - Toggleable visibility on mobile */}
       <div
-        className={`absolute top-20 sm:top-4 left-4 right-4 flex flex-col sm:flex-row justify-between items-start gap-4 pointer-events-none ${
+        className={`absolute top-20 sm:top-4 left-4 right-4 flex flex-col sm:flex-row justify-between items-start gap-4 pointer-events-none z-50 ${
           !uiVisible ? 'sm:flex hidden' : 'flex'
         }`}
       >
@@ -67,7 +45,6 @@ const HomePage = () => {
           <DebugToggle />
         </div>
       </div>
-      <TouchControls />
     </div>
   );
 };
