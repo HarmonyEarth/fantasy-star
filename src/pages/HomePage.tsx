@@ -12,54 +12,23 @@ import CharacterSelect from '../components/CharacterSelect';
 import { gameDebugAtom } from '../store';
 
 const HomePage = () => {
-  // useEffect(() => {
-  //   const initGPU = async () => {
-  //     const adapter = await navigator.gpu.requestAdapter();
-  //     const device = await adapter?.requestDevice();
-  //     console.log('device', device);
-  //   };
-  //   initGPU();
-  // }, []);
   return (
     <div id="fullscreen-container" className="w-full h-screen relative">
       <SocketManager />
-      <div className="flex flex-col sm:flex-row justify-evenly items-center space-y-4 sm:space-y-0 sm:space-x-4">
+      <Canvas
+        className="w-full h-full absolute top-0 left-0"
+        fallback={<div>Sorry no WebGL supported!</div>}
+      >
+        <Experience />
+      </Canvas>
+      <div className="absolute top-4 left-4 right-4 flex flex-col sm:flex-row justify-between items-start gap-4 pointer-events-none">
         <InputSelector />
         <CharacterSelect />
-        <div className="w-full sm:w-1/6 bg-black/80 backdrop-blur-sm rounded-lg p-4 text-white">
+        <div className="w-full sm:w-52 bg-black/50 backdrop-blur-sm rounded-lg p-4 text-white pointer-events-auto">
           <FullscreenToggle />
           <DebugToggle />
         </div>
       </div>
-      <Canvas
-        fallback={<div>Sorry no WebGL supported!</div>}
-
-        // onCreated={({ gl }) => {
-        //   if (navigator.gpu) {
-        //     console.log(
-        //       'Using WebGPURenderer',
-        //       navigator.gpu instanceof GPU ? 'with GPU' : 'without GPU'
-        //     );
-        //     const canvas = gl.domElement;
-        //     const webGPURenderer = new WebGPURenderer({ canvas });
-        //     webGPURenderer.setSize(window.innerWidth, window.innerHeight);
-        //     webGPURenderer.setPixelRatio(window.devicePixelRatio);
-        //     // webGPURenderer.shadowMap.enabled = true;
-
-        //     // Dispose of the default WebGLRenderer
-        //     gl.dispose();
-
-        //     // Replace with WebGPURenderer
-        //     return webGPURenderer;
-        //   } else {
-        //     console.warn(
-        //       'WebGPU not supported. Falling back to WebGLRenderer.'
-        //     );
-        //   }
-        // }}
-      >
-        <Experience />
-      </Canvas>
       <TouchControls />
     </div>
   );

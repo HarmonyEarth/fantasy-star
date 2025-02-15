@@ -8,7 +8,7 @@ const CharacterSelect = () => {
     playerCharacterIdAtom
   );
   return (
-    <div className="w-full sm:w-1/6 bg-black/80 backdrop-blur-sm rounded-lg p-4 text-white">
+    <div className="w-full sm:w-48 bg-black/50 backdrop-blur-sm rounded-lg p-4 text-white pointer-events-auto">
       <h2 className="text-lg font-bold mb-3">Select Character</h2>
       <div className="space-y-2">
         {characters.map((character) => (
