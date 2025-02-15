@@ -1,50 +1,56 @@
-# React + TypeScript + Vite
+# Fantasy Star
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Fantasy Star is a 3D multiplayer game engine designed for browser, mobile (Android), and desktop (Mac, Windows, Linux). It leverages modern web technologies to deliver a seamless and high-performance gaming experience.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **3D Rendering**: Built with React Three Fiber & Drei for advanced 3D graphics.
+- **Cross-Platform**: Supports browser, mobile, and desktop via Tauri.
+- **Real-Time Multiplayer**: Uses Bun WebSockets for real-time communication.
+- **State Management**: Integrated with Jotai for efficient state handling.
+- **Input Support**: Includes Gamepad API and touch controls.
+- **Performance Optimization**: Enhanced with React Compiler, React Scan, and WebGPU API.
+- **Model Optimization**: Compresses models using GLTF Transform.
+- **Routing**: Managed by TanStack Router.
+- **Styling**: Utilizes Tailwind CSS.
+- **Build Tooling**: Powered by Vite.
 
-## Expanding the ESLint configuration
+## Getting Started
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+1. **Clone the repository**:
 
-- Configure the top-level `parserOptions` property like this:
+   ```sh
+   git clone https://github.com/HarmonyEarth/fantasy-star.git
+   cd fantasy-star
+   ```
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
+2. **Add dependencies**:
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+   ```sh
+   bun add
+   ```
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
+3. **Start the development server**:
 
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
-```
+   ```sh
+   bun start:dev
+   ```
+
+4. **Tauri development**:
+   ```sh
+   bun tauri dev
+   ```
+
+## Contributing
+
+Contributions are welcome! Open an issue or submit a pull request.
+
+## Acknowledgements
+
+- [React Three Fiber](https://github.com/pmndrs/react-three-fiber)
+- [Tauri](https://v2.tauri.app/)
+- [Bun](https://bun.sh/)
+- [React Query](https://react-query.tanstack.com/)
+- [TanStack Router](https://tanstack.com/router)
+- [Tailwind CSS](https://tailwindcss.com/)
+- [Vite](https://vitejs.dev/)
