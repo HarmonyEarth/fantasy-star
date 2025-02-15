@@ -8,14 +8,14 @@ const TouchControls = () => {
   const [selectedDevice] = useAtom(selectedInputDeviceAtom);
   const touchState = useTouch(selectedDevice.type === INPUT_DEVICES.TOUCH);
 
+  if (selectedDevice.type !== INPUT_DEVICES.TOUCH) return null;
+
   return (
-    <div className="fixed bottom-40 left-40 z-10">
-      {selectedDevice.type === INPUT_DEVICES.TOUCH && (
-        <TouchJoystick
-          direction={touchState.direction}
-          active={touchState.active}
-        />
-      )}
+    <div className="fixed bottom-40 left-40" style={{ zIndex: 10 }}>
+      <TouchJoystick
+        direction={touchState.direction}
+        active={touchState.active}
+      />
     </div>
   );
 };
