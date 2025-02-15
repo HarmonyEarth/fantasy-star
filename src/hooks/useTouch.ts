@@ -59,10 +59,12 @@ export function useTouch(selectedDeviceIsTouch: boolean) {
     if (!selectedDeviceIsTouch) return;
 
     const handleTouchStart = (e: TouchEvent) => {
+      e.preventDefault();
       handleStart(e.touches[0].clientX, e.touches[0].clientY);
     };
 
     const handleTouchMove = (e: TouchEvent) => {
+      e.preventDefault();
       handleMove(e.touches[0].clientX, e.touches[0].clientY);
     };
 
@@ -85,9 +87,11 @@ export function useTouch(selectedDeviceIsTouch: boolean) {
     if (element) {
       element.addEventListener('touchstart', handleTouchStart, {
         signal: controller.signal,
+        passive: false,
       });
       element.addEventListener('touchmove', handleTouchMove, {
         signal: controller.signal,
+        passive: false,
       });
       element.addEventListener('touchend', handleTouchEnd, {
         signal: controller.signal,
