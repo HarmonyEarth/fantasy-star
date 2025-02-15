@@ -11,7 +11,7 @@ import CharacterSelect from '../components/User Interface/CharacterSelect';
 import DebugToggle from '../components/User Interface/DebugToggle';
 import ShowUIToggle from '../components/User Interface/ShowUIToggle';
 import FullScreenToggle from '../components/User Interface/FullScreenToggle';
-import { SocketManager } from '../components/Networking/SocketManager';
+import SocketManager from '../components/Networking/SocketManager';
 
 const HomePage = () => {
   const [showUI] = useAtom(showUIAtom);
