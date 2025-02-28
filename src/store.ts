@@ -9,6 +9,8 @@ export const characterPositionAtom = atom(new Vector3(0, 5, 0));
 // This is for runtime physics-based position
 export const physicsPositionAtom = atom(new Vector3(0, 5, 0));
 export const playerCharacterIdAtom = atom<string | null>('Tifa');
+// Respawn position atom
+export const respawnPositionAtom = atom(new Vector3(0, 5, 0));
 
 // Available devices atom
 // export const availableDevicesAtom = atom<InputDevice[]>(getInitialDevices());

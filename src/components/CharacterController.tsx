@@ -4,7 +4,7 @@ import {
   RigidBody,
   RapierRigidBody,
 } from '@react-three/rapier';
-import { useRef, Suspense, useState } from 'react';
+import { useRef, Suspense, useState, useEffect } from 'react';
 import { Group, Vector3, ArrowHelper } from 'three';
 import { useAtom } from 'jotai';
 import { useKeyboardControls, Loader, Html } from '@react-three/drei';
@@ -15,6 +15,7 @@ import {
   gameDebugAtom,
   playerCharacterIdAtom,
   selectedInputDeviceAtom,
+  respawnPositionAtom,
 } from '../store';
 import { ANIMATION_STATES, INPUT_DEVICES, LOCOMOTION } from '../constants';
 import Character from './Character';
@@ -23,6 +24,7 @@ import { characters } from '../assets/mockData';
 const RUN_SPEED = 8;
 const ROTATION_SPEED = 0.1;
 const VELOCITY_LERP_FACTOR = 10;
+const DEATH_ZONE_Y = -10; // Y position threshold for death zone
 
 interface Props {
   characterId?: string;
@@ -33,6 +35,7 @@ const CharacterController: React.FC<Props> = () => {
   const [playerCharacterId] = useAtom(playerCharacterIdAtom);
   // Get the persistent characterPosition vector (do not use its setter)
   const [characterPosition] = useAtom(characterPositionAtom);
+  const [respawnPosition] = useAtom(respawnPositionAtom);
   const [gameDebug] = useAtom(gameDebugAtom);
   const [selectedDevice] = useAtom(selectedInputDeviceAtom);
   const [animationState, setAnimationState] = useState(ANIMATION_STATES.IDLE);
@@ -99,6 +102,17 @@ const CharacterController: React.FC<Props> = () => {
 
   useFrame((state, delta) => {
     if (!rigidBodyRef.current || !characterRef.current) return;
+
+    // Check if character fell below the death zone threshold
+    const translation = rigidBodyRef.current.translation();
+    if (translation.y < DEATH_ZONE_Y) {
+      // Respawn the character
+      rigidBodyRef.current.setTranslation(respawnPosition, true);
+      rigidBodyRef.current.setLinvel({ x: 0, y: 0, z: 0 }, true);
+      rigidBodyRef.current.setAngvel({ x: 0, y: 0, z: 0 }, true);
+      // Update character position
+      characterPosition.copy(respawnPosition);
+    }
 
     computeMoveDirection();
     const lerpFactor = 1 - Math.exp(-VELOCITY_LERP_FACTOR * delta);
