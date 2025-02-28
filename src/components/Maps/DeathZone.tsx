@@ -1,5 +1,5 @@
 import { useAtom } from 'jotai';
-import { characterPositionAtom, respawnPositionAtom } from '../store';
+import { respawnPositionAtom, characterPositionAtom } from '../../store';
 
 interface DeathZoneProps {
   threshold?: number;

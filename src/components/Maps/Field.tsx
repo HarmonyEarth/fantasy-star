@@ -5,7 +5,7 @@ import { useEffect } from 'react';
 import { useAtom } from 'jotai';
 import { Vector3 } from 'three';
 import { respawnPositionAtom } from '../../store';
-import DeathZone from '../DeathZone';
+import DeathZone from './DeathZone';
 
 const Field = () => {
   const checkerboardTexture = useTexture('/textures/placeholder.png');
