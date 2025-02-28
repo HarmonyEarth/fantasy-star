@@ -4,6 +4,8 @@ import { useEffect, useMemo, useRef } from 'react';
 import { AnimationMixer, LoopOnce, LoopRepeat, SkeletonHelper } from 'three';
 import { ANIMATION_STATES, LOCOMOTION } from '../constants';
 import type { Character } from '../types';
+import { useAtom } from 'jotai';
+import { gameDebugAtom } from '../store';
 
 interface Props {
   characters: Character[];
@@ -18,6 +20,7 @@ const Character: React.FC<Props> = ({
   animationState,
   locomotionState,
 }) => {
+  const [gameDebug] = useAtom(gameDebugAtom);
   // Find character data
   const character = useMemo(
     () => characters.find((char) => char.id === characterId),
@@ -99,15 +102,15 @@ const Character: React.FC<Props> = ({
     mixer.update(delta);
   });
 
-  // useEffect(() => {
-  //   const scene = characterModel.scene;
-  //   const skeletonHelper = new SkeletonHelper(scene);
-  //   scene.add(skeletonHelper);
+  useEffect(() => {
+    const scene = characterModel.scene;
+    const skeletonHelper = new SkeletonHelper(scene);
+    gameDebug && scene.add(skeletonHelper);
 
-  //   return () => {
-  //     scene.remove(skeletonHelper);
-  //   };
-  // }, [characterModel.scene]);
+    return () => {
+      scene.remove(skeletonHelper);
+    };
+  }, [characterModel.scene, gameDebug]);
 
   return characterId ? (
     <group position-y={-1}>

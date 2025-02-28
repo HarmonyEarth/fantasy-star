@@ -2,6 +2,8 @@
 
 Fantasy Star is a 3D multiplayer game engine designed for browser, mobile (Android), and desktop (Mac, Windows, Linux). It leverages modern web technologies to deliver a seamless and high-performance gaming experience.
 
+Play the game here: [Fantasy Star](https://fantasy-star.vercel.app/)
+
 ## Features
 
 - **3D Rendering**: Built with React Three Fiber & Drei for advanced 3D graphics.
@@ -14,32 +16,6 @@ Fantasy Star is a 3D multiplayer game engine designed for browser, mobile (Andro
 - **Routing**: Managed by TanStack Router.
 - **Styling**: Utilizes Tailwind CSS.
 - **Build Tooling**: Powered by Vite.
-
-## Getting Started
-
-1. **Clone the repository**:
-
-   ```sh
-   git clone https://github.com/HarmonyEarth/fantasy-star.git
-   cd fantasy-star
-   ```
-
-2. **Add dependencies**:
-
-   ```sh
-   bun add
-   ```
-
-3. **Start the development server**:
-
-   ```sh
-   bun start:dev
-   ```
-
-4. **Tauri development**:
-   ```sh
-   bun tauri dev
-   ```
 
 ## Contributing
 
